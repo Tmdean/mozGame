@@ -1,45 +1,17 @@
-keyMaps = {
-	'37' : function(el){ // Left
-		$(el)
-			.animate({
-				'left': '-=30'
-			},
-			{
-				'duration': 500,
-				queue:  false
-			});
+var keyMaps = {
+	'37' : function(player){ // Left
+		player.moveBy(-30, 0);
 	},
 	
-	'38' : function(el){ // Up
-		$(el)
-			.animate({
-				'top': '-=30'
-			},
-			{
-				'duration': 500,
-				queue:  false
-			});
+	'38' : function(player){ // Up
+		player.moveBy(0, -30);
 	},
 	
-	'39' : function(el){ // Right
-		$(el)
-			.animate({
-				'left': '+=30'
-			},
-			{
-				'duration': 500,
-				queue:  false
-			});
+	'39' : function(player){ // Right
+		player.moveBy(30, 0);
 	},
 	
-	'40' : function(el){ // Down
-		$(el)
-			.animate({
-				'top': '+=30'
-			},
-			{
-				'duration': 500,
-				queue:  false
-			});
+	'40' : function(player){ // Down
+		player.moveBy(0, 30);
 	}
 };

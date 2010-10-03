@@ -11,3 +11,15 @@ function player(params){
 }
 
 player.prototype = movableObj;
+
+player.prototype.moveBy = function(x, y){
+	$(this.container)
+		.animate({
+			'left': '+=' + x,
+			'top': '+=' + y,
+		},
+		{
+			'duration': 500,
+			queue:  false
+		});
+};
