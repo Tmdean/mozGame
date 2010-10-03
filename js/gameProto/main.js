@@ -23,6 +23,9 @@
 			
 			setTimeout(arguments.callee, game.framerate)
 		}, game.framerate);
+		
+		// Make a player
+		game.player1 = new player();
 
 	};
 })( jQuery );
