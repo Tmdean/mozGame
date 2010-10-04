@@ -1,3 +1,12 @@
+/* Needed params:
+
+	context,
+	x,
+	y,
+	radius,
+	color
+*/
+
 function circle(params){
 	params.context.beginPath();
 	params.context.arc(
