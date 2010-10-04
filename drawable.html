@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>untitled</title>
+	<meta name="generator" content="TextMate http://macromates.com/">
+	<meta name="author" content="Jeremy Kahn">
+	
+	<link rel="stylesheet" type="text/css" href="css/protoStyle.css" /> 
+	
+	<script type="text/javascript" src="js/jquery.js"></script>
+	<script type="text/javascript" src="js/draw/drawable.js"></script>
+	<script type="text/javascript" src="js/draw/viewport.js"></script>
+	<script type="text/javascript" src="js/draw/background.js"></script>
+	<script type="text/javascript" src="js/draw/primitives.js"></script>
+	
+	<script type="text/javascript">
+		
+		var game;
+	
+		$(function(){
+				
+				game = {
+					framerate : 1000 / 20,
+					canvas : $('#backdrop').get(0)
+				};
+				
+				game.viewport = new viewport(game.canvas, game);
+				game.bg = new background(game.canvas, game);
+				
+				setTimeout(function(){
+					for (var i = 0; i < game.drawlist.length; i++){
+						game.drawlist[i].draw()
+					}
+					
+					setTimeout(arguments.callee,game.framerate);					
+				},game.framerate);
+		});
+	</script>
+	
+	<!-- Date: 2010-10-02 -->
+</head>
+<body>
+	<canvas id="backdrop"></canvas>
+</body>
+</html>
