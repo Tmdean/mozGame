@@ -10,7 +10,13 @@ function handleKeys(keymap){
 		
 	$(window)
 		.blur(function(){
-			keymap = {};
+			
+			// If the window loses focus, reset the keyboard state.
+			for (map in keymap){
+				if (keymap.hasOwnProperty(map)){
+					keymap[map] = null;
+				}
+			}
 		});
 		
 	return keymap;

@@ -10,6 +10,9 @@
 	<link rel="stylesheet" type="text/css" href="css/protoStyle.css" /> 
 	
 	<script type="text/javascript" src="js/jquery.js"></script>
+	<script type="text/javascript" src="js/keyhandler/keyHandler.js"></script>
+	<script type="text/javascript" src="js/keyhandler/keyMaps.js"></script>
+	<script type="text/javascript" src="js/draw/update.js"></script>
 	<script type="text/javascript" src="js/draw/drawable.js"></script>
 	<script type="text/javascript" src="js/draw/viewport.js"></script>
 	<script type="text/javascript" src="js/draw/background.js"></script>
@@ -23,19 +26,23 @@
 				
 				game = {
 					framerate : 1000 / 20,
-					canvas : $('#backdrop').get(0)
+					canvas : $('#backdrop').get(0),
+					keymap : {}
 				};
+				
+				game.context = game.canvas.getContext('2d');
 				
 				game.viewport = new viewport(game.canvas, game);
 				game.bg = new background(game.canvas, game);
 				
 				setTimeout(function(){
-					for (var i = 0; i < game.drawlist.length; i++){
-						game.drawlist[i].draw()
-					}
+					
+					update(game);
 					
 					setTimeout(arguments.callee,game.framerate);					
 				},game.framerate);
+				
+				handleKeys(game.keymap);
 		});
 	</script>
 	

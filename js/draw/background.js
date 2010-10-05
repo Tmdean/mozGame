@@ -4,7 +4,7 @@ function background(canvas, game, params){
 	this.prop = {
 		stars : [],
 		starsPerViewport : 200,
-		starMaxSize : .5
+		starMaxSize : 1
 	};
 	
 	$(this.canvas)
@@ -18,7 +18,7 @@ function background(canvas, game, params){
 background.prototype = drawable;
 
 background.prototype.render = function(){
-	for (var i = 0; i < this.prop.starsPerViewport; i++){
+	for (var i = 0; i < this.prop.stars.length; i++){
 		var star = this.prop.stars[i];
 		
 		circle($.extend({
@@ -26,6 +26,13 @@ background.prototype.render = function(){
 			color : '#fff'
 		}, star))
 		
+		/*circle({
+			context : this.game.context,
+			color : '#fff',
+			x : star.x,
+			y : star.y,
+			radius : star.radius
+		})*/
 	}
 };
 
