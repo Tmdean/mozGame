@@ -1,6 +1,10 @@
 spcw.World = function (gs) {
     this.screen_x = 0;
     this.screen_y = 0;
+    this.screen_x2 = 0;
+    this.screen_y2 = 0;
+    this.visible_width = 0;
+    this.visible_height = 0;
     this.screen_zoom = 0.2;
     this.anchors = [];
     this.gs = gs;
@@ -16,7 +20,7 @@ spcw.World.prototype.removeAnchor = function (anchor) {
 
 spcw.World.prototype.update = function (gs) {
     var min_x, min_y, mid_x, mid_y, max_x, max_y, i,
-        screen_width, screen_height;
+        screen_width, screen_height, zoom_inv;
 
     mid_x = 0;
     mid_y = 0;
@@ -42,15 +46,20 @@ spcw.World.prototype.update = function (gs) {
     screen_width = max_x - min_x + 1;
     screen_height = max_y - min_y + 1;
 
-    this.screen_zoom = spcw.CAMERA_DAMP * this.screen_zoom + 
+    /*this.screen_zoom = spcw.CAMERA_DAMP * this.screen_zoom + 
         (1 - spcw.CAMERA_DAMP) * Math.min(gs.width / screen_width,
-            gs.height / screen_height);
+            gs.height / screen_height);*/
+    this.screen_zoom = 0.2;
 
     this.screen_x = spcw.CAMERA_DAMP * this.screen_x +
         (1 - spcw.CAMERA_DAMP) * (mid_x - (gs.width / this.screen_zoom) / 2);
 
     this.screen_y = spcw.CAMERA_DAMP * this.screen_y +
         (1 - spcw.CAMERA_DAMP) * (mid_y - (gs.height / this.screen_zoom) / 2);
+    
+    zoom_inv = 1 / this.screen_zoom;
+    this.screen_x2 = this.screen_x + zoom_inv * gs.width;
+    this.screen_y2 = this.screen_y + zoom_inv * gs.height;
 };
 
 spcw.World.prototype.scale = function (ctx) {
@@ -58,11 +67,27 @@ spcw.World.prototype.scale = function (ctx) {
 };
 
 spcw.World.prototype.translate_x = function (x, width) {
-    return x - this.screen_x;
+    var x2 = x + width;
+    
+    if ((x >= this.screen_x && x <= this.screen_x2) ||
+        (x2 >= this.screen_x && x2 <= this.screen_x2))
+    {
+        return x - this.screen_x;
+    } else {
+        return x - this.screen_x + spcw.WORLD_WIDTH;
+    }
 };
 
 spcw.World.prototype.translate_y = function (y, height) {
-    return y - this.screen_y;
+    var y2 = y + height;
+    
+    if ((y >= this.screen_y && y <= this.screen_y2) ||
+        (y2 >= this.screen_y && y2 <= this.screen_y2))
+    {
+        return y - this.screen_y;
+    } else {
+        return y - this.screen_y + spcw.WORLD_HEIGHT;
+    }
 };
 
 spcw.World.prototype.offset_x = function(x, dx) {
@@ -207,7 +232,9 @@ spcw.Ship = function (world, npc) {
     this.explode_timeout = 0;
     this.collide_poly = [ [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0] ];
 
-    world.addAnchor(this);
+    if (!this.npc) {
+        world.addAnchor(this);
+    }
 
     if (!this.npc) {
         this.keyDown_37 = this.keyUp_39 = function () {
@@ -223,7 +250,8 @@ spcw.Ship = function (world, npc) {
         };
 
         this.keyDown_88 = this.keyDown_32 = this.keyUp_32 = 
-            this.keyUp_88 = function () {
+            this.keyUp_88 = function ()
+        {
             this.firing = !this.firing;
         };
     }

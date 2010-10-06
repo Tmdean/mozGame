@@ -18,17 +18,10 @@ spcw.load_assets = function () {
         'png/Ship13.png', // 13
         'png/Ship14.png', // 14
         'png/Ship15.png', // 15
-        'png/Thrust1.png', // 16
-        'png/Thrust2.png', // 17
-        'png/Thrust3.png', // 18
-        'png/Thrust4.png', // 19
         'png/Bullet.png', // 20
         'png/Explode1.png', // 21
         'png/Explode2.png', // 22
         'png/Planet.png', // 23
-        'png/Smoke1.png', // 24
-        'png/Smoke2.png', // 25
-        'png/Smoke3.png' // 26
     ];
     
     spcw.asset_index = {
@@ -48,17 +41,10 @@ spcw.load_assets = function () {
         SHIP_13: 13,
         SHIP_14: 14,
         SHIP_15: 15,
-        THRUST_1: 16,
-        THRUST_2: 17,
-        THRUST_3: 18,
-        THRUST_4: 19,
-        BULLET: 20,
-        EXPLODE_1: 21,
-        EXPLODE_2: 22,
-        PLANET: 23,
-        SMOKE_1: 24,
-        SMOKE_2: 25,
-        SMOKE_3: 26
+        BULLET: 16,
+        EXPLODE_1: 17,
+        EXPLODE_2: 18,
+        PLANET: 19,
     };
     
     spcw.img_asset = [];
