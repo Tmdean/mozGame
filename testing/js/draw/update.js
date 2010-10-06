@@ -6,7 +6,6 @@ function update(game){
 		}
 	}
 	
-	//game.context.clearRect(0, 0, game.viewport.width, game.viewport.height);
 	game.viewport.clear();
 	
 	for (var i = 0; i < game.drawlist.length; i++){

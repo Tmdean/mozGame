@@ -1,6 +1,6 @@
-function viewport(canvas, game, params){
+function viewport(game, params){
 	
-	this.canvas = canvas;
+	this.canvas = game.canvas;
 	this.game = game;
 	this.params = params;
 	
@@ -16,8 +16,8 @@ function viewport(canvas, game, params){
 		y : 0
 	};
 		
-	$(canvas).get(0).height = this.height;
-	$(canvas).get(0).width = this.width;
+	$(this.canvas).get(0).height = this.height;
+	$(this.canvas).get(0).width = this.width;
 	
 	game.viewport = this;
 }

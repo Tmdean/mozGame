@@ -1,5 +1,5 @@
 // Testing value
-var speed = 4;
+var speed = 10;
 
 var keyMaps = {
 	'37' : function(game){ // Left
