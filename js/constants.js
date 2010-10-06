@@ -40,7 +40,7 @@ spcw.WORLD_HEIGHT = 3750;
 /* Value in range [0, 1.0) determining how floaty the camera is.
    New camera position is determined by this formula.
        CAMERA_DAMP * OLD_POSITION + (1 - CAMERA_DAMP) * NEW_POSITION */
-spcw.CAMERA_DAMP = 0.95;
+spcw.CAMERA_DAMP = 0;
 
 /* Margin of arena to show around the camera tracked objects. */
 spcw.CAMERA_EDGE = 128;

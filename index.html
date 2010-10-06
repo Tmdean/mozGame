@@ -1,31 +1,150 @@
-<!DOCTYPE html>
-
-<html lang="en">
+﻿<!DOCTYPE html>
+<html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>untitled</title>
-	<meta name="generator" content="TextMate http://macromates.com/">
-	<meta name="author" content="Jeremy Kahn">
-	
-	<link rel="stylesheet" type="text/css" href="css/protoStyle.css" /> 
-	
-	<script type="text/javascript" src="js/jquery.js"></script>
-	<script type="text/javascript" src="js/gameProto/main.js"></script>
-	<script type="text/javascript" src="js/gameProto/movableObj.js"></script>
-	<script type="text/javascript" src="js/gameProto/player.js"></script>
-	<script type="text/javascript" src="js/gameProto/keyHandler.js"></script>
-	<script type="text/javascript" src="js/gameProto/keyMaps.js"></script>
-	<script type="text/javascript" src="js/gameProto/update.js"></script>
-	
-	<script type="text/javascript">
-		$(function(){
-			$('#game').initGame();
-		});
-	</script>
-	
-	<!-- Date: 2010-10-02 -->
+    <meta charset="utf-8" />
+    <title>Space combat prototype</title>
+    <script language="JavaScript" src="js/jquery-1.4.2.min.js"></script>
+    <script language="JavaScript" src="js/jsgamesoup.js"></script>
+    <script language="JavaScript" src="js/constants.js"></script>
+    <script language="JavaScript" src="js/load-assets.js"></script>
+    <script language="JavaScript" src="js/game.js"></script>
+    <script language="JavaScript">
+        var start_game;
+
+        start_game = function (gs) {
+            var w = new spcw.World(gs);
+            gs.addEntity(w);
+            gs.addEntity(new spcw.Planet(w));
+
+            spcw.player = new spcw.Ship(w, false);
+            spcw.ai = new spcw.Ship(w, true);
+
+            gs.addEntity(spcw.ai);
+            gs.addEntity(spcw.player);
+        };
+
+        $(function () {
+            var backgr, ctx_back, i;
+
+            spcw.load_assets();
+
+            backgr = $('#background')[0];
+            ctx_back = backgr.getContext('2d');
+            ctx_back.fillStyle = '#000';
+            ctx_back.fillRect(0, 0, backgr.width, backgr.height);
+
+            for (i = 0; i < 500; i++) {
+                ctx_back.fillStyle = ['#333', '#666', '#999'][Math.floor(Math.random() * 3)]
+                ctx_back.fillRect(Math.random() * (backgr.width - 4),
+                    Math.random() * (backgr.height - 4),
+                    Math.random() * 3, Math.random() * 3);
+            }
+        });
+    </script>
+    <style type="text/css">
+        body {
+            background: #666;
+        }
+        
+        #offscreen {
+            display: none;
+        }
+        
+        #background, #game {
+            position: absolute;
+            width: 800px;
+            height: 600px;
+        }
+        
+        #info {
+            position: absolute;
+            left: 820px;
+            color: #fff;
+        }
+        
+        .status {
+            position: absolute;
+            top: 608px;
+            background: #333;
+            width: 234px;
+            height: 59px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            color: #999;
+            padding: 8px;
+            line-height: 20px;
+            font-weight: bold;
+        }
+        
+        .meter {
+            display: inline-block;
+            margin-left: 10px;
+            width: 100px;
+            height: 10px;
+            border: 1px solid #c99;
+        }
+        
+        .meter_label {
+            display: inline-block;
+            font-weight: normal;
+            width: 65px;
+        }
+        
+        #player_shield, #player_weapons, #ai_shield, #ai_weapons {
+            background: #f33;
+            width: 100px;
+            height: 10px;
+        }
+        
+        #player_status {
+            left: 8px;
+        }
+        
+        #ai_status {
+            left: 258px;
+        }
+    </style>
 </head>
 <body>
-	<div id="game"></div>
+    <canvas id="offscreen" width="64" height="64"></canvas>
+    <canvas id="background" width="800" height="600"></canvas>
+    <canvas id="game" jsgs="start_game" fps="50" width="800" height="600">
+    </canvas>
+    <div class="status" id="player_status">
+        Player<br />
+        <span class="meter_label">Shield</span>
+        <div class="meter">
+            <div id="player_shield"></div>
+        </div><br />
+        <span class="meter_label">Weapons</span>
+        <div class="meter">
+            <div id="player_weapons"></div>
+        </div>
+    </div>
+    <div class="status" id="ai_status">
+        Compooder<br />
+        <span class="meter_label">Shield</span>
+        <div class="meter">
+            <div id="ai_shield"></div>
+        </div><br />
+        <span class="meter_label">Weapons</span>
+        <div class="meter">
+            <div id="ai_weapons"></div>
+        </div>
+    </div>
+    <div id="info">
+        <code>
+            Delta thet: <span id="delta_thet">0</span><br />
+            Angle: <span id="angle">0</span><br />
+            Img index: <span id="img_index">0</span><br />
+            x: <span id="coord_x">0</span><br />
+            y: <span id="coord_y">0</span><br />
+            dx: <span id="dx">0</span><br />
+            dy: <span id="dy">0</span><br />
+            velocity: <span id="velocity">0</span><br />
+            player_angle: <span id="player_angle">0</span><br />
+            collide_poly: <span id="collide_poly">0</span>
+        </code>
+    </div>
 </body>
 </html>

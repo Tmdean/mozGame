@@ -124,7 +124,7 @@ spcw.Planet.prototype.draw = function (c, gs) {
     if (spcw.assets_loaded) {
         c.save();
         this.world.scale(c);
-        c.drawImage(spcw.img_asset[23],
+        c.drawImage(spcw.img_asset[19],
             this.world.translate_x(this.x, this.width),
             this.world.translate_y(this.y, this.height));
         c.restore();
@@ -155,7 +155,7 @@ spcw.Bullet.prototype.draw = function (c, gs) {
     if (spcw.assets_loaded) {
         c.save();
         this.world.scale(c);
-        c.drawImage(spcw.img_asset[20],
+        c.drawImage(spcw.img_asset[16],
             this.world.translate_x(this.x, this.width),
             this.world.translate_y(this.y, this.height));
         c.restore();
@@ -357,7 +357,7 @@ spcw.Ship.prototype.draw = function (c, gs) {
         this.world.scale(c);
 
         if (this.exploding) {
-            c.drawImage(spcw.img_asset[21 + this.explode_frame],
+            c.drawImage(spcw.img_asset[17 + this.explode_frame],
                 this.world.translate_x(this.x, this.width),
                 this.world.translate_y(this.y, this.height));
         } else if (this.npc) {
