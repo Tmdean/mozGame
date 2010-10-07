@@ -5,7 +5,7 @@ spcw._2PI = 2 * Math.PI;
 
 /* 16 equally-spaced angles from 0 to 2*PI
    Used to map an integer in the range [0, 16) to an angle. */
-spcw.clamp_angle = [
+spcw.clampAngle = [
     0,
     Math.PI / 8,
     Math.PI / 4,
@@ -38,11 +38,11 @@ spcw.WORLD_WIDTH = 5000;
 spcw.WORLD_HEIGHT = 3750;
 
 /* Value in range [0, 1.0) determining how floaty the camera is.
-   New camera position is determined by this formula.
+   New camera position/zoom is determined by the following formula.
        CAMERA_DAMP * OLD_POSITION + (1 - CAMERA_DAMP) * NEW_POSITION */
 spcw.CAMERA_DAMP = 0.9;
 
-/* Margin of arena to show around the camera tracked objects. */
+/* Margin of arena to show around the camera tracked objects in pixels. */
 spcw.CAMERA_EDGE = 128;
 
 /* Maximum zoomed out amount. This should be greater than 

@@ -9,9 +9,9 @@
     <script language="JavaScript" src="js/load-assets.js"></script>
     <script language="JavaScript" src="js/game.js"></script>
     <script language="JavaScript">
-        var start_game;
+        var startGame;
 
-        start_game = function (gs) {
+        startGame = function (gs) {
             var w = new spcw.World(gs);
             gs.addEntity(w);
             gs.addEntity(new spcw.Planet(w));
@@ -24,18 +24,18 @@
         };
 
         $(function () {
-            var backgr, ctx_back, i;
+            var backgr, ctxBack, i;
 
-            spcw.load_assets();
+            spcw.loadAssets();
 
             backgr = $('#background')[0];
-            ctx_back = backgr.getContext('2d');
-            ctx_back.fillStyle = '#000';
-            ctx_back.fillRect(0, 0, backgr.width, backgr.height);
+            ctxBack = backgr.getContext('2d');
+            ctxBack.fillStyle = '#000';
+            ctxBack.fillRect(0, 0, backgr.width, backgr.height);
 
             for (i = 0; i < 500; i++) {
-                ctx_back.fillStyle = ['#333', '#666', '#999'][Math.floor(Math.random() * 3)]
-                ctx_back.fillRect(Math.random() * (backgr.width - 4),
+                ctxBack.fillStyle = ['#333', '#666', '#999'][Math.floor(Math.random() * 3)]
+                ctxBack.fillRect(Math.random() * (backgr.width - 4),
                     Math.random() * (backgr.height - 4),
                     Math.random() * 3, Math.random() * 3);
             }
@@ -84,23 +84,23 @@
             border: 1px solid #c99;
         }
         
-        .meter_label {
+        .meter-label {
             display: inline-block;
             font-weight: normal;
             width: 65px;
         }
         
-        #player_shield, #player_weapons, #ai_shield, #ai_weapons {
+        #player-shield, #player-weapons, #ai-shield, #ai-weapons {
             background: #f33;
             width: 100px;
             height: 10px;
         }
         
-        #player_status {
+        #player-status {
             left: 8px;
         }
         
-        #ai_status {
+        #ai-status {
             left: 258px;
         }
     </style>
@@ -108,42 +108,42 @@
 <body>
     <canvas id="offscreen" width="64" height="64"></canvas>
     <canvas id="background" width="800" height="600"></canvas>
-    <canvas id="game" jsgs="start_game" fps="50" width="800" height="600">
+    <canvas id="game" jsgs="startGame" fps="50" width="800" height="600">
     </canvas>
-    <div class="status" id="player_status">
+    <div class="status" id="player-status">
         Player<br />
-        <span class="meter_label">Shield</span>
+        <span class="meter-label">Shield</span>
         <div class="meter">
-            <div id="player_shield"></div>
+            <div id="player-shield"></div>
         </div><br />
-        <span class="meter_label">Weapons</span>
+        <span class="meter-label">Weapons</span>
         <div class="meter">
-            <div id="player_weapons"></div>
+            <div id="player-weapons"></div>
         </div>
     </div>
-    <div class="status" id="ai_status">
+    <div class="status" id="ai-status">
         Compooder<br />
-        <span class="meter_label">Shield</span>
+        <span class="meter-label">Shield</span>
         <div class="meter">
-            <div id="ai_shield"></div>
+            <div id="ai-shield"></div>
         </div><br />
-        <span class="meter_label">Weapons</span>
+        <span class="meter-label">Weapons</span>
         <div class="meter">
-            <div id="ai_weapons"></div>
+            <div id="ai-weapons"></div>
         </div>
     </div>
     <div id="info">
         <code>
-            Delta thet: <span id="delta_thet">0</span><br />
+            Delta thet: <span id="delta-thet">0</span><br />
             Angle: <span id="angle">0</span><br />
-            Img index: <span id="img_index">0</span><br />
-            x: <span id="coord_x">0</span><br />
-            y: <span id="coord_y">0</span><br />
+            Img index: <span id="img-index">0</span><br />
+            x: <span id="coord-x">0</span><br />
+            y: <span id="coord-y">0</span><br />
             dx: <span id="dx">0</span><br />
             dy: <span id="dy">0</span><br />
             velocity: <span id="velocity">0</span><br />
-            screen_x: <span id="screen_x">0</span><br />
-            screen_y: <span id="screen_y">0</span>
+            screen-x: <span id="screen-x">0</span><br />
+            screen-y: <span id="screen-y">0</span>
         </code>
     </div>
 </body>

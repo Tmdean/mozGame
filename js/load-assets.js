@@ -1,5 +1,5 @@
-spcw.load_assets = function () {
-    var assets, check_images_loaded, i;
+spcw.loadAssets = function () {
+    var assets, checkImagesLoaded, i;
     
     assets = [
         'png/Ship0.png', // 0
@@ -24,7 +24,7 @@ spcw.load_assets = function () {
         'png/Planet.png', // 23
     ];
     
-    spcw.asset_index = {
+    spcw.assetIndex = {
         SHIP_0: 0,
         SHIP_1: 1,
         SHIP_2: 2,
@@ -47,28 +47,28 @@ spcw.load_assets = function () {
         PLANET: 19,
     };
     
-    spcw.img_asset = [];
+    spcw.imgAsset = [];
     
-    spcw.assets_loaded = false;
-    check_images_loaded = function () {
+    spcw.assetsLoaded = false;
+    checkImagesLoaded = function () {
         var i, loaded;
         
         loaded = true;
-        for (i = 0; i < spcw.img_asset.length; i++) {
-            if (!spcw.img_asset[i].complete) {
+        for (i = 0; i < spcw.imgAsset.length; i++) {
+            if (!spcw.imgAsset[i].complete) {
                 loaded = false;
                 break;
             }
         }
         
         if (loaded) {
-            spcw.assets_loaded = true;
+            spcw.assetsLoaded = true;
         }
     };
     
     for (i = 0; i < assets.length; i++) {
-        spcw.img_asset[i] = new Image();
-        spcw.img_asset[i].src = assets[i];
-        spcw.img_asset[i].onload = check_images_loaded;
+        spcw.imgAsset[i] = new Image();
+        spcw.imgAsset[i].src = assets[i];
+        spcw.imgAsset[i].onload = checkImagesLoaded;
     }
 };
