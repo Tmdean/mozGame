@@ -10,13 +10,16 @@
 	<link rel="stylesheet" type="text/css" href="css/protoStyle.css" /> 
 	
 	<script type="text/javascript" src="js/jquery.js"></script>
-	<script type="text/javascript" src="js/keyhandler/keyHandler.js"></script>
+	<script type="text/javascript" src="js/keyhandler/keyhandler.js"></script>
 	<script type="text/javascript" src="js/keyhandler/keyMaps.js"></script>
 	<script type="text/javascript" src="js/draw/update.js"></script>
 	<script type="text/javascript" src="js/draw/drawable.js"></script>
+	<script type="text/javascript" src="js/draw/gameShapes.js"></script>
 	<script type="text/javascript" src="js/draw/viewport.js"></script>
 	<script type="text/javascript" src="js/draw/background.js"></script>
 	<script type="text/javascript" src="js/draw/primitives.js"></script>
+	<script type="text/javascript" src="js/draw/entity.js"></script>
+	<script type="text/javascript" src="js/utils.js"></script>
 	
 	<script type="text/javascript">
 		
@@ -32,8 +35,14 @@
 				
 				game.context = game.canvas.getContext('2d');
 				
-				game.viewport = new viewport(game.canvas, game);
-				game.bg = new background(game.canvas, game);
+				game.viewport = new viewport(game);
+				game.bg = new background(game);
+				initShapes(game);
+				
+				// Testing player shapes
+				game.player1 = new entity(game, {
+					gameShape : game.shapes.player1
+				});/**/
 				
 				setTimeout(function(){
 					

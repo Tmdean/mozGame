@@ -1,7 +1,7 @@
 drawable = {
-	init: function(canvas, game, params){
+	init: function(game, params){
 		
-		if (!canvas){
+		if (!game.canvas){
 			throw "Canvas reference is needed!"
 		}
 		
@@ -9,7 +9,7 @@ drawable = {
 			throw "Game object reference is needed!"
 		}
 		
-		this.canvas = canvas;
+		this.canvas = game.canvas;
 		this.game = game;
 		this.context = this.canvas.getContext('2d')
 		this.params = params || {};
