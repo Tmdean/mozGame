@@ -41,7 +41,14 @@
 				
 				// Testing player shapes
 				game.player1 = new entity(game, {
-					gameShape : game.shapes.player1
+					gameShape : game.shapes.player1,
+					height : 60,
+					width : 40,
+					color : '#0f0',
+					state : {
+						x : 50,
+						y : 50
+					}
 				});/**/
 				
 				setTimeout(function(){
