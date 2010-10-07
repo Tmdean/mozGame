@@ -40,10 +40,14 @@ spcw.WORLD_HEIGHT = 3750;
 /* Value in range [0, 1.0) determining how floaty the camera is.
    New camera position is determined by this formula.
        CAMERA_DAMP * OLD_POSITION + (1 - CAMERA_DAMP) * NEW_POSITION */
-spcw.CAMERA_DAMP = 0;
+spcw.CAMERA_DAMP = 0.9;
 
 /* Margin of arena to show around the camera tracked objects. */
 spcw.CAMERA_EDGE = 128;
+
+/* Maximum zoomed out amount. This should be greater than 
+   canvas_size / world_size */
+spcw.CAMERA_MIN_ZOOM = 0.2;
 
 /* Bullet velocity in pixels per frame. */
 spcw.BULLET_SPEED = 17.5;

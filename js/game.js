@@ -7,55 +7,173 @@ spcw.World = function (gs) {
     this.visible_height = 0;
     this.screen_zoom = 0.2;
     this.anchors = [];
+    this.anchor_count = 0;
     this.gs = gs;
 };
 
 spcw.World.prototype.addAnchor = function (anchor) {
-    this.anchors.push(anchor);
+    this.anchor_count++;
+    this.anchors.push({
+        obj: anchor,
+        x_offs: 0,
+        y_offs: 0
+    });
+    this.anchors.push({
+        obj: anchor,
+        x_offs: spcw.WORLD_WIDTH,
+        y_offs: spcw.WORLD_HEIGHT
+    });
 };
 
 spcw.World.prototype.removeAnchor = function (anchor) {
-    this.anchors.remove(anchor);
+    var i;
+    
+    this.anchor_count--;
+    
+    i = 0;
+    while (i < this.anchors.length) {
+        if (this.anchors[i].obj === anchor) {
+            this.anchors.splice(i, 1);
+        } else {
+            i++;
+        }
+    }
+};
+
+spcw.compare_by_x = function (a, b) {
+    return a.mid_x - b.mid_x;
+};
+
+spcw.compare_by_y = function (a, b) {
+    return a.mid_y - b.mid_y;
+};
+
+spcw.World.prototype.find_min_extent = function (cmp) {
+    var arr, i, len, min_width, min_index, width;
+    
+    min_index = 0;
+    arr = this.anchors;
+
+    if (arr.length > 0) {    
+        len = this.anchor_count;
+        
+        min_width = cmp(arr[len - 1], arr[0]);
+        for (i = 1; i < len; i++) {
+            width = cmp(arr[len + i - 1], arr[i]);
+            if (width < min_width) {
+                min_width = width;
+                min_index = i;
+            }
+        }
+    }
+    
+    return min_index;
 };
 
 spcw.World.prototype.update = function (gs) {
-    var min_x, min_y, mid_x, mid_y, max_x, max_y, i,
-        screen_width, screen_height, zoom_inv;
+    var i, anchor, min_extent, min_x, mid_x, max_x, min_y, mid_y, max_y,
+        new_zoom, new_x, new_y;
 
-    mid_x = 0;
-    mid_y = 0;
-    min_x = spcw.WORLD_WIDTH;
-    min_y = spcw.WORLD_HEIGHT;
-    max_x = 0;
-    max_y = 0;
-    
     for (i = 0; i < this.anchors.length; i++) {
-        mid_x += this.anchors[i].x + this.anchors[i].width / 2;
-        mid_y += this.anchors[i].y + this.anchors[i].height / 2;
-        min_x = Math.min(min_x, this.anchors[i].x) - spcw.CAMERA_EDGE;
-        min_y = Math.min(min_y, this.anchors[i].y) - spcw.CAMERA_EDGE;
-        max_x = Math.max(max_x, this.anchors[i].x + this.anchors[i].width +
-            spcw.CAMERA_EDGE);
-        max_y = Math.max(max_y, this.anchors[i].y + this.anchors[i].height +
-            spcw.CAMERA_EDGE);
+        anchor = this.anchors[i];
+        anchor.min_x = anchor.obj.x + anchor.x_offs;
+        anchor.min_y = anchor.obj.y + anchor.y_offs;
+        anchor.mid_x = anchor.min_x + anchor.obj.width / 2;
+        anchor.mid_y = anchor.min_y + anchor.obj.height / 2;
+        anchor.max_x = anchor.min_x + anchor.obj.width + spcw.CAMERA_EDGE;
+        anchor.max_y = anchor.min_y + anchor.obj.height + spcw.CAMERA_EDGE;
+        anchor.min_x -= spcw.CAMERA_EDGE;
+        anchor.min_y -= spcw.CAMERA_EDGE;
     }
-
-    mid_x /= this.anchors.length;
-    mid_y /= this.anchors.length;
-
+    
+    this.anchors.sort(spcw.compare_by_x);
+    min_extent = this.find_min_extent(spcw.compare_by_x);
+    
+    min_x = spcw.WORLD_WIDTH;
+    mid_x = 0;
+    max_x = 0;
+    for (i = 0; i < this.anchor_count; i++) {
+        anchor = this.anchors[i + min_extent];
+        min_x = Math.min(min_x, anchor.min_x);
+        mid_x += anchor.mid_x;
+        max_x = Math.max(max_x, anchor.max_x);
+    }
+    mid_x /= this.anchor_count;
+    
+    this.anchors.sort(spcw.compare_by_y);
+    min_extent = this.find_min_extent(spcw.compare_by_y);
+    
+    min_y = spcw.WORLD_HEIGHT;
+    mid_y = 0;
+    max_y = 0;
+    for (i = 0; i < this.anchor_count; i++) {
+        anchor = this.anchors[i + min_extent];
+        min_y = Math.min(min_y, anchor.min_y);
+        mid_y += anchor.mid_y;
+        max_y = Math.max(max_y, anchor.max_y);
+    }
+    mid_y /= this.anchor_count;
+    
     screen_width = max_x - min_x + 1;
     screen_height = max_y - min_y + 1;
 
-    /*this.screen_zoom = spcw.CAMERA_DAMP * this.screen_zoom + 
-        (1 - spcw.CAMERA_DAMP) * Math.min(gs.width / screen_width,
-            gs.height / screen_height);*/
-    this.screen_zoom = 0.2;
+    new_zoom = Math.max(spcw.CAMERA_MIN_ZOOM, Math.min(gs.width / screen_width,
+        gs.height / screen_height));
+    new_x = mid_x - (gs.width / this.screen_zoom) / 2;
+    new_y = mid_y - (gs.height / this.screen_zoom) / 2;
+    $('#screen_x').text(new_x);
+    $('#screen_y').text(new_y);
+    
+    if (Math.abs(this.screen_x + spcw.WORLD_WIDTH - new_x) <
+        Math.abs(this.screen_x - new_x))
+    {
+        this.screen_x += spcw.WORLD_WIDTH;
+    }
+    
+    if (Math.abs(this.screen_x - spcw.WORLD_WIDTH - new_x) <
+        Math.abs(this.screen_x - new_x))
+    {
+        this.screen_x -= spcw.WORLD_WIDTH;
+    }
+    
+    if (Math.abs(this.screen_y + spcw.WORLD_HEIGHT - new_y) <
+        Math.abs(this.screen_y - new_y))
+    {
+        this.screen_y += spcw.WORLD_HEIGHT;
+    }
+    
+    if (Math.abs(this.screen_y - spcw.WORLD_HEIGHT - new_y) <
+        Math.abs(this.screen_y - new_y))
+    {
+        this.screen_y -= spcw.WORLD_HEIGHT;
+    }
+    
+    this.screen_zoom = spcw.CAMERA_DAMP * this.screen_zoom + 
+        (1 - spcw.CAMERA_DAMP) * new_zoom;
 
     this.screen_x = spcw.CAMERA_DAMP * this.screen_x +
-        (1 - spcw.CAMERA_DAMP) * (mid_x - (gs.width / this.screen_zoom) / 2);
+        (1 - spcw.CAMERA_DAMP) * new_x;
 
     this.screen_y = spcw.CAMERA_DAMP * this.screen_y +
-        (1 - spcw.CAMERA_DAMP) * (mid_y - (gs.height / this.screen_zoom) / 2);
+        (1 - spcw.CAMERA_DAMP) * new_y;
+    
+    /* this.screen_x = this.offset_x(this.screen_x, 0);
+    this.screen_y = this.offset_y(this.screen_y, 0); */
+    if (this.screen_x < 0) {
+        this.screen_x += spcw.WORLD_WIDTH;
+    }
+    
+    if (this.screen_x >= spcw.WORLD_WIDTH) {
+        this.screen_x -= spcw.WORLD_WIDTH;
+    }
+    
+    if (this.screen_y < 0) {
+        this.screen_y += spcw.WORLD_HEIGHT;
+    }
+    
+    if (this.screen_y >= spcw.WORLD_HEIGHT) {
+        this.screen_y -= spcw.WORLD_HEIGHT;
+    }
     
     zoom_inv = 1 / this.screen_zoom;
     this.screen_x2 = this.screen_x + zoom_inv * gs.width;
@@ -232,9 +350,7 @@ spcw.Ship = function (world, npc) {
     this.explode_timeout = 0;
     this.collide_poly = [ [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0] ];
 
-    if (!this.npc) {
-        world.addAnchor(this);
-    }
+    world.addAnchor(this);
 
     if (!this.npc) {
         this.keyDown_37 = this.keyUp_39 = function () {
