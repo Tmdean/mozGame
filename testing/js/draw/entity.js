@@ -13,7 +13,7 @@ function entity(game, params){
 		} else {
 			log('No shape provided for entity ' + this);
 		}
-	}
+	};
 	
 	this.setState = function(state){
 		this.state = state;
