@@ -5,7 +5,7 @@ spcw._2PI = 2 * Math.PI;
 
 /* 16 equally-spaced angles from 0 to 2*PI
    Used to map an integer in the range [0, 16) to an angle. */
-spcw.clamp_angle = [
+spcw.clampAngle = [
     0,
     Math.PI / 8,
     Math.PI / 4,
@@ -38,12 +38,16 @@ spcw.WORLD_WIDTH = 5000;
 spcw.WORLD_HEIGHT = 3750;
 
 /* Value in range [0, 1.0) determining how floaty the camera is.
-   New camera position is determined by this formula.
+   New camera position/zoom is determined by the following formula.
        CAMERA_DAMP * OLD_POSITION + (1 - CAMERA_DAMP) * NEW_POSITION */
-spcw.CAMERA_DAMP = 0.95;
+spcw.CAMERA_DAMP = 0.9;
 
-/* Margin of arena to show around the camera tracked objects. */
+/* Margin of arena to show around the camera tracked objects in pixels. */
 spcw.CAMERA_EDGE = 128;
+
+/* Maximum zoomed out amount. This should be greater than 
+   canvas_size / world_size */
+spcw.CAMERA_MIN_ZOOM = 0.2;
 
 /* Bullet velocity in pixels per frame. */
 spcw.BULLET_SPEED = 17.5;
@@ -62,3 +66,27 @@ spcw.RECHARGE_RATE = 0.2;
 
 /* Delay between bullet firings in frames. */
 spcw.FIRING_DELAY = 10;
+
+/* Data types */
+
+spcw.Box = function (x, y, width, height) {
+    if (arguments.length === 4) {
+        this.x = arguments[0];
+        this.y = arguments[1];
+        this.width = arguments[2];
+        this.height = arguments[3];
+    } else {
+        this.x = 0;
+        this.y = 0;
+        this.width = 0;
+        this.height = 0;
+    }
+};
+
+spcw.Box.prototype.centerX = function () {
+    return this.x + this.width / 2;
+};
+
+spcw.Box.prototype.centerY = function () {
+    return this.y + this.height / 2;
+};

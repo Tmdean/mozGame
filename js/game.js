@@ -1,71 +1,219 @@
 spcw.World = function (gs) {
-    this.screen_x = 0;
-    this.screen_y = 0;
-    this.screen_zoom = 0.2;
+    this.screenX = 0;
+    this.screenY = 0;
+    this.screenX2 = 0;
+    this.screenY2 = 0;
+    this.screenZoom = 0.2;
     this.anchors = [];
+    this.anchorCount = 0;
     this.gs = gs;
+    this.anim = new spcw.BackgroundRenderer(spcw.WORLD_WIDTH, spcw.WORLD_HEIGHT);
 };
 
 spcw.World.prototype.addAnchor = function (anchor) {
-    this.anchors.push(anchor);
+    this.anchorCount++;
+    this.anchors.push({
+        obj: anchor,
+        xOffs: 0,
+        yOffs: 0
+    });
+    this.anchors.push({
+        obj: anchor,
+        xOffs: spcw.WORLD_WIDTH,
+        yOffs: spcw.WORLD_HEIGHT
+    });
 };
 
 spcw.World.prototype.removeAnchor = function (anchor) {
-    this.anchors.remove(anchor);
+    var i;
+    
+    this.anchorCount--;
+    
+    i = 0;
+    while (i < this.anchors.length) {
+        if (this.anchors[i].obj === anchor) {
+            this.anchors.splice(i, 1);
+        } else {
+            i++;
+        }
+    }
+};
+
+spcw.compareByX = function (a, b) {
+    return a.midX - b.midX;
+};
+
+spcw.compareByY = function (a, b) {
+    return a.midY - b.midY;
+};
+
+spcw.World.prototype.findMinExtent = function (cmp) {
+    var arr, i, len, minWidth, minIndex, width;
+    
+    minIndex = 0;
+    arr = this.anchors;
+
+    if (arr.length > 0) {    
+        len = this.anchorCount;
+        
+        minWidth = cmp(arr[len - 1], arr[0]);
+        for (i = 1; i < len; i++) {
+            width = cmp(arr[len + i - 1], arr[i]);
+            if (width < minWidth) {
+                minWidth = width;
+                minIndex = i;
+            }
+        }
+    }
+    
+    return minIndex;
 };
 
 spcw.World.prototype.update = function (gs) {
-    var min_x, min_y, mid_x, mid_y, max_x, max_y, i,
-        screen_width, screen_height;
+    var i, anchor, minExtent, minX, midX, maxX, minY, midY, maxY, newZoom,
+        newX, newY, screenWidth, screenHeight, zoomInv;
 
-    mid_x = 0;
-    mid_y = 0;
-    min_x = spcw.WORLD_WIDTH;
-    min_y = spcw.WORLD_HEIGHT;
-    max_x = 0;
-    max_y = 0;
-    
     for (i = 0; i < this.anchors.length; i++) {
-        mid_x += this.anchors[i].x + this.anchors[i].width / 2;
-        mid_y += this.anchors[i].y + this.anchors[i].height / 2;
-        min_x = Math.min(min_x, this.anchors[i].x) - spcw.CAMERA_EDGE;
-        min_y = Math.min(min_y, this.anchors[i].y) - spcw.CAMERA_EDGE;
-        max_x = Math.max(max_x, this.anchors[i].x + this.anchors[i].width +
-            spcw.CAMERA_EDGE);
-        max_y = Math.max(max_y, this.anchors[i].y + this.anchors[i].height +
-            spcw.CAMERA_EDGE);
+        anchor = this.anchors[i];
+        anchor.minX = anchor.obj.x + anchor.xOffs;
+        anchor.minY = anchor.obj.y + anchor.yOffs;
+        anchor.midX = anchor.minX + anchor.obj.width / 2;
+        anchor.midY = anchor.minY + anchor.obj.height / 2;
+        anchor.maxX = anchor.minX + anchor.obj.width + spcw.CAMERA_EDGE;
+        anchor.maxY = anchor.minY + anchor.obj.height + spcw.CAMERA_EDGE;
+        anchor.minX -= spcw.CAMERA_EDGE;
+        anchor.minY -= spcw.CAMERA_EDGE;
     }
+    
+    this.anchors.sort(spcw.compareByX);
+    minExtent = this.findMinExtent(spcw.compareByX);
+    
+    minX = spcw.WORLD_WIDTH;
+    midX = 0;
+    maxX = 0;
+    for (i = 0; i < this.anchorCount; i++) {
+        anchor = this.anchors[i + minExtent];
+        minX = Math.min(minX, anchor.minX);
+        midX += anchor.midX;
+        maxX = Math.max(maxX, anchor.maxX);
+    }
+    midX /= this.anchorCount;
+    
+    this.anchors.sort(spcw.compareByY);
+    minExtent = this.findMinExtent(spcw.compareByY);
+    
+    minY = spcw.WORLD_HEIGHT;
+    midY = 0;
+    maxY = 0;
+    for (i = 0; i < this.anchorCount; i++) {
+        anchor = this.anchors[i + minExtent];
+        minY = Math.min(minY, anchor.minY);
+        midY += anchor.midY;
+        maxY = Math.max(maxY, anchor.maxY);
+    }
+    midY /= this.anchorCount;
+    
+    screenWidth = maxX - minX + 1;
+    screenHeight = maxY - minY + 1;
 
-    mid_x /= this.anchors.length;
-    mid_y /= this.anchors.length;
+    newZoom = Math.max(spcw.CAMERA_MIN_ZOOM, Math.min(gs.width / screenWidth,
+        gs.height / screenHeight));
+    newX = midX - (gs.width / this.screenZoom) / 2;
+    newY = midY - (gs.height / this.screenZoom) / 2;
+    $('#screen-x').text(newX);
+    $('#screen-y').text(newY);
+    
+    if (Math.abs(this.screenX + spcw.WORLD_WIDTH - newX) <
+        Math.abs(this.screenX - newX))
+    {
+        this.screenX += spcw.WORLD_WIDTH;
+    }
+    
+    if (Math.abs(this.screenX - spcw.WORLD_WIDTH - newX) <
+        Math.abs(this.screenX - newX))
+    {
+        this.screenX -= spcw.WORLD_WIDTH;
+    }
+    
+    if (Math.abs(this.screenY + spcw.WORLD_HEIGHT - newY) <
+        Math.abs(this.screenY - newY))
+    {
+        this.screenY += spcw.WORLD_HEIGHT;
+    }
+    
+    if (Math.abs(this.screenY - spcw.WORLD_HEIGHT - newY) <
+        Math.abs(this.screenY - newY))
+    {
+        this.screenY -= spcw.WORLD_HEIGHT;
+    }
+    
+    this.screenZoom = spcw.CAMERA_DAMP * this.screenZoom + 
+        (1 - spcw.CAMERA_DAMP) * newZoom;
 
-    screen_width = max_x - min_x + 1;
-    screen_height = max_y - min_y + 1;
+    this.screenX = spcw.CAMERA_DAMP * this.screenX +
+        (1 - spcw.CAMERA_DAMP) * newX;
 
-    this.screen_zoom = spcw.CAMERA_DAMP * this.screen_zoom + 
-        (1 - spcw.CAMERA_DAMP) * Math.min(gs.width / screen_width,
-            gs.height / screen_height);
+    this.screenY = spcw.CAMERA_DAMP * this.screenY +
+        (1 - spcw.CAMERA_DAMP) * newY;
+    
+    if (this.screenX < 0) {
+        this.screenX += spcw.WORLD_WIDTH;
+    }
+    
+    if (this.screenX >= spcw.WORLD_WIDTH) {
+        this.screenX -= spcw.WORLD_WIDTH;
+    }
+    
+    if (this.screenY < 0) {
+        this.screenY += spcw.WORLD_HEIGHT;
+    }
+    
+    if (this.screenY >= spcw.WORLD_HEIGHT) {
+        this.screenY -= spcw.WORLD_HEIGHT;
+    }
+    
+    zoomInv = 1 / this.screenZoom;
+    this.screenX2 = this.screenX + zoomInv * gs.width;
+    this.screenY2 = this.screenY + zoomInv * gs.height;
+};
 
-    this.screen_x = spcw.CAMERA_DAMP * this.screen_x +
-        (1 - spcw.CAMERA_DAMP) * (mid_x - (gs.width / this.screen_zoom) / 2);
-
-    this.screen_y = spcw.CAMERA_DAMP * this.screen_y +
-        (1 - spcw.CAMERA_DAMP) * (mid_y - (gs.height / this.screen_zoom) / 2);
+spcw.World.prototype.draw = function (c, gs) {
+    c.save();
+    this.scale(c);
+    this.anim.drawBackground(c, this.screenX, this.screenY,
+        this.screenX2, this.screenY2);
+    c.restore();
 };
 
 spcw.World.prototype.scale = function (ctx) {
-    ctx.scale(this.screen_zoom, this.screen_zoom);
+    ctx.scale(this.screenZoom, this.screenZoom);
 };
 
-spcw.World.prototype.translate_x = function (x, width) {
-    return x - this.screen_x;
+spcw.World.prototype.translateX = function (x, width) {
+    var x2 = x + width;
+    
+    if ((x >= this.screenX && x <= this.screenX2) ||
+        (x2 >= this.screenX && x2 <= this.screenX2))
+    {
+        return x - this.screenX;
+    } else {
+        return x - this.screenX + spcw.WORLD_WIDTH;
+    }
 };
 
-spcw.World.prototype.translate_y = function (y, height) {
-    return y - this.screen_y;
+spcw.World.prototype.translateY = function (y, height) {
+    var y2 = y + height;
+    
+    if ((y >= this.screenY && y <= this.screenY2) ||
+        (y2 >= this.screenY && y2 <= this.screenY2))
+    {
+        return y - this.screenY;
+    } else {
+        return y - this.screenY + spcw.WORLD_HEIGHT;
+    }
 };
 
-spcw.World.prototype.offset_x = function(x, dx) {
+spcw.World.prototype.offsetX = function(x, dx) {
     var result;
     
     result = (x + dx) % spcw.WORLD_WIDTH;
@@ -76,7 +224,7 @@ spcw.World.prototype.offset_x = function(x, dx) {
     return result;
 };
 
-spcw.World.prototype.offset_y = function (y, dy) {
+spcw.World.prototype.offsetY = function (y, dy) {
     var result;
     
     result = (y + dy) % spcw.WORLD_HEIGHT;
@@ -96,12 +244,12 @@ spcw.Planet = function (world) {
 };
 
 spcw.Planet.prototype.draw = function (c, gs) {
-    if (spcw.assets_loaded) {
+    if (spcw.assetsLoaded) {
         c.save();
         this.world.scale(c);
-        c.drawImage(spcw.img_asset[23],
-            this.world.translate_x(this.x, this.width),
-            this.world.translate_y(this.y, this.height));
+        c.drawImage(spcw.imgAsset[19],
+            this.world.translateX(this.x, this.width),
+            this.world.translateY(this.y, this.height));
         c.restore();
     }
 };
@@ -115,60 +263,60 @@ spcw.Bullet = function (world, x, y, dx, dy) {
     this.width = 8;
     this.height = 8;
     this.life = spcw.BULLET_LIFE;
-    this.collide_poly = [ [0, 0], [0, 0], [0, 0], [0, 0] ];
+    this.collidePoly = [ [0, 0], [0, 0], [0, 0], [0, 0] ];
 };
 
 spcw.Bullet.prototype.update = function (gs) {
-    this.x = this.world.offset_x(this.x, this.dx);
-    this.y = this.world.offset_y(this.y, this.dy);
+    this.x = this.world.offsetX(this.x, this.dx);
+    this.y = this.world.offsetY(this.y, this.dy);
 
     this.life--;
     if (this.life <= 0) gs.delEntity(this);
 };
 
 spcw.Bullet.prototype.draw = function (c, gs) {
-    if (spcw.assets_loaded) {
+    if (spcw.assetsLoaded) {
         c.save();
         this.world.scale(c);
-        c.drawImage(spcw.img_asset[20],
-            this.world.translate_x(this.x, this.width),
-            this.world.translate_y(this.y, this.height));
+        c.drawImage(spcw.imgAsset[16],
+            this.world.translateX(this.x, this.width),
+            this.world.translateY(this.y, this.height));
         c.restore();
     }
 };
 
 spcw.Bullet.prototype.collisionPoly = function () {
-    var center_x, center_y, angle_a, angle_b, h;
+    var centerX, centerY, angleA, angleB, h;
 
-    center_x = 2 * this.x + this.dx;
-    if (dx < 0) {
-        center_x -= this.width;
+    centerX = 2 * this.x + this.dx;
+    if (this.dx < 0) {
+        centerX -= this.width;
     } else {
-        center_x += this.width;
+        centerX += this.width;
     }
-    center_x /= 2;
+    centerX /= 2;
 
-    center_y = 2 * this.y + this.dy;
-    if (dy < 0) {
-        center_y -= this.width;
+    centerY = 2 * this.y + this.dy;
+    if (this.dy < 0) {
+        centerY -= this.width;
     } else {
-        center_y += this.height;
+        centerY += this.height;
     }
-    center_y /= 2;
+    centerY /= 2;
 
-    angle_a = Math.atan2(-this.dy, this.dx);
-    angle_b = Math.atan2(4, spcw.BULLET_SPEED / 2);
+    angleA = Math.atan2(-this.dy, this.dx);
+    angleB = Math.atan2(4, spcw.BULLET_SPEED / 2);
     h = Math.sqrt(Math.pow(spcw.BULLET_SPEED / 2, 2) + 16);
 
-    this.collide_poly[0][0] = center_x + h * Math.cos(angle_a + angle_b);
-    this.collide_poly[0][1] = center_y + h * -Math.sin(angle_a + angle_b);
-    this.collide_poly[1][0] = center_x + h * Math.cos(angle_a + Math.PI - angle_b);
-    this.collide_poly[1][1] = center_y + h * -Math.sin(angle_a + Math.PI - angle_b);
-    this.collide_poly[2][0] = center_x + h * Math.cos(angle_a + Math.PI + angle_b);
-    this.collide_poly[2][1] = center_y + h * -Math.sin(angle_a + Math.PI + angle_b);
-    this.collide_poly[3][0] = center_x + h * Math.cos(angle_a - angle_b);
-    this.collide_poly[3][1] = center_y + h * -Math.sin(angle_a - angle_b);
-    return this.collide_poly;
+    this.collidePoly[0][0] = centerX + h * Math.cos(angleA + angleB);
+    this.collidePoly[0][1] = centerY + h * -Math.sin(angleA + angleB);
+    this.collidePoly[1][0] = centerX + h * Math.cos(angleA + Math.PI - angleB);
+    this.collidePoly[1][1] = centerY + h * -Math.sin(angleA + Math.PI - angleB);
+    this.collidePoly[2][0] = centerX + h * Math.cos(angleA + Math.PI + angleB);
+    this.collidePoly[2][1] = centerY + h * -Math.sin(angleA + Math.PI + angleB);
+    this.collidePoly[3][0] = centerX + h * Math.cos(angleA - angleB);
+    this.collidePoly[3][1] = centerY + h * -Math.sin(angleA - angleB);
+    return this.collidePoly;
 };
 
 spcw.Bullet.prototype.collided = function (other) {
@@ -186,36 +334,40 @@ spcw.Ship = function (world, npc) {
     this.npc = npc;
     
     /* input/AI-controlled properties */
-    this.delta_thet = 0;
+    this.deltaThet = 0;
     this.thrust = false;
     this.firing = false;
 
-    this.img_index = 0;
+    this.imgIndex = 0;
     this.angle = Math.random() * spcw._2PI;
     this.x = Math.random() * (spcw.WORLD_WIDTH - 256) + 128;
     this.y = Math.random() * (spcw.WORLD_HEIGHT - 256) + 128;
+    this.width = 64;
+    this.height = 64;
     this.dx = 0;
     this.dy = 0;
     this.veloc = 0;
-    this.width = 64;
-    this.height = 64;
-    this.fire_timeout = spcw.FIRING_DELAY;
+    this.fireTimeout = spcw.FIRING_DELAY;
     this.energy = 100;
     this.shield = 100;
     this.exploding = false;
-    this.explode_frame = 0;
-    this.explode_timeout = 0;
-    this.collide_poly = [ [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0] ];
+    this.explodeFrame = 0;
+    this.explodeTimeout = 0;
+
+    this.box = new spcw.Box();
+    this.box.width = this.width;
+    this.box.height = this.height;
+    this.anim = new spcw.ShipRenderer();
 
     world.addAnchor(this);
 
     if (!this.npc) {
         this.keyDown_37 = this.keyUp_39 = function () {
-            this.delta_thet += spcw.TURN_SPEED;
+            this.deltaThet += spcw.TURN_SPEED;
         };
 
         this.keyUp_37 = this.keyDown_39 = function () {
-            this.delta_thet -= spcw.TURN_SPEED;
+            this.deltaThet -= spcw.TURN_SPEED;
         };
 
         this.keyDown_38 = this.keyUp_38 = function() {
@@ -223,24 +375,25 @@ spcw.Ship = function (world, npc) {
         };
 
         this.keyDown_88 = this.keyDown_32 = this.keyUp_32 = 
-            this.keyUp_88 = function () {
+            this.keyUp_88 = function ()
+        {
             this.firing = !this.firing;
         };
     }
 };
 
 spcw.Ship.prototype.update = function (gs) {
-    var bullet_x, bullet_y, bullet_dx, bullet_dy, c_angle, center_x, center_y;
+    var bulletX, bulletY, bulletDX, bulletDY, cAngle, centerX, centerY;
 
     if (this.npc) {
-        this.do_ai();
+        this.doAi();
     }
 
-    if (Math.abs(this.delta_thet) < 0.05) {
-        this.delta_thet = 0;
+    if (Math.abs(this.deltaThet) < 0.05) {
+        this.deltaThet = 0;
     }
 
-    this.angle += this.delta_thet;
+    this.angle += this.deltaThet;
     if (this.angle >= spcw._2PI) {
         this.angle -= spcw._2PI;
     }
@@ -249,33 +402,32 @@ spcw.Ship.prototype.update = function (gs) {
         this.angle += spcw._2PI;
     }
 
-    this.img_index = Math.round(
-        this.angle / (Math.PI / 8)) % 16;
+    this.imgIndex = Math.round(this.angle / (Math.PI / 8)) % 16;
 
-    c_angle = spcw.clamp_angle[this.img_index];
-    center_x = this.x + this.width / 2;
-    center_y = this.y + this.height / 2;
+    cAngle = spcw.clampAngle[this.imgIndex];
+    centerX = this.x + this.width / 2;
+    centerY = this.y + this.height / 2;
 
     if (this.thrust && !this.exploding) {
         this.dx = (spcw.MAX_VELOC - this.veloc) * (this.dx / spcw.MAX_VELOC) + 
-            this.veloc * Math.cos(c_angle)
+            this.veloc * Math.cos(cAngle)
         this.dy = (spcw.MAX_VELOC - this.veloc) * (this.dy / spcw.MAX_VELOC) + 
-            this.veloc * -Math.sin(c_angle)
+            this.veloc * -Math.sin(cAngle)
         this.veloc = Math.min(this.veloc + spcw.ACCEL_RATE, spcw.MAX_VELOC);
     } else {
         this.veloc = 0;
     }
 
     if (this.firing && !this.exploding &&
-        this.fire_timeout <= 0 && this.energy >= spcw.BULLET_ENERGY)
+        this.fireTimeout <= 0 && this.energy >= spcw.BULLET_ENERGY)
     {
-        bullet_x = center_x + Math.cos(c_angle) * 28 - 4;
-        bullet_y = center_y - Math.sin(c_angle) * 28 - 4;
-        bullet_dx = Math.cos(c_angle) * spcw.BULLET_SPEED + this.dx;
-        bullet_dy = -Math.sin(c_angle) * spcw.BULLET_SPEED + this.dy;
-        gs.addEntity(new spcw.Bullet(this.world, bullet_x, bullet_y,
-            bullet_dx, bullet_dy));
-        this.fire_timeout = spcw.FIRING_DELAY;
+        bulletX = centerX + Math.cos(cAngle) * 28 - 4;
+        bulletY = centerY - Math.sin(cAngle) * 28 - 4;
+        bulletDX = Math.cos(cAngle) * spcw.BULLET_SPEED + this.dx;
+        bulletDY = -Math.sin(cAngle) * spcw.BULLET_SPEED + this.dy;
+        gs.addEntity(new spcw.Bullet(this.world, bulletX, bulletY,
+            bulletDX, bulletDY));
+        this.fireTimeout = spcw.FIRING_DELAY;
         this.energy -= spcw.BULLET_ENERGY;
     }
 
@@ -284,125 +436,100 @@ spcw.Ship.prototype.update = function (gs) {
     if (this.shield < 0) {
         this.shield = 0;
         this.exploding = true;
-        this.explode_timeout = 100;
+        this.explodeTimeout = 100;
     }
 
     if (this.exploding) {
-        this.explode_frame = (this.explode_frame + 1) % 2;
-        this.explode_timeout--;
-        if (this.explode_timeout <= 0) {
+        this.explodeFrame = (this.explodeFrame + 1) % 2;
+        this.explodeTimeout--;
+        if (this.explodeTimeout <= 0) {
             gs.delEntity(this);
             this.world.removeAnchor(this);
         }
     }
 
     if (this.npc) {
-        $('#ai_weapons').width(Math.round(this.energy));
-        $('#ai_shield').width(Math.round(this.shield));
+        $('#ai-weapons').width(Math.round(this.energy));
+        $('#ai-shield').width(Math.round(this.shield));
     } else {
-        $('#player_weapons').width(Math.round(this.energy));
-        $('#player_shield').width(Math.round(this.shield));
+        $('#player-weapons').width(Math.round(this.energy));
+        $('#player-shield').width(Math.round(this.shield));
     }
 
-    if (this.fire_timeout > 0) {
-        this.fire_timeout--;
+    if (this.fireTimeout > 0) {
+        this.fireTimeout--;
     }
 
-    this.x = this.world.offset_x(this.x, this.dx);
-    this.y = this.world.offset_y(this.y, this.dy);
+    this.x = this.world.offsetX(this.x, this.dx);
+    this.y = this.world.offsetY(this.y, this.dy);
 };
 
 spcw.Ship.prototype.draw = function (c, gs) {
     if (!this.npc) {
-        $('#delta_thet').text(this.delta_thet);
+        $('#delta-thet').text(this.deltaThet);
         $('#angle').text(this.angle);
-        $('#img_index').text(this.img_index);
-        $('#coord_x').text(this.x);
-        $('#coord_y').text(this.y);
+        $('#img-index').text(this.imgIndex);
+        $('#coord-x').text(this.x);
+        $('#coord-y').text(this.y);
         $('#dx').text(this.dx);
         $('#dy').text(this.dy);
         $('#velocity').text(this.veloc);
     }
+    
+    this.box.x = this.world.translateX(this.x, this.width);
+    this.box.y = this.world.translateY(this.y, this.height);
 
-    if (spcw.assets_loaded) {
+    if (spcw.assetsLoaded) {
         c.save();
         this.world.scale(c);
 
         if (this.exploding) {
-            c.drawImage(spcw.img_asset[21 + this.explode_frame],
-                this.world.translate_x(this.x, this.width),
-                this.world.translate_y(this.y, this.height));
-        } else if (this.npc) {
-            c.drawImage(spcw.img_asset[this.img_index],
-                this.world.translate_x(this.x, this.width),
-                this.world.translate_y(this.y, this.height));
-            c.fillStyle = '#f00';
-            c.globalAlpha = 0.65;
-            c.globalCompositeOperation = 'source-atop';
-            c.fillRect(this.world.translate_x(this.x, this.width),
-                this.world.translate_y(this.y, this.height),
-                this.width, this.height);
+            this.anim.drawExplosion(c, this.box);
         } else {
-            c.drawImage(spcw.img_asset[this.img_index],
-                this.world.translate_x(this.x, this.width),
-                this.world.translate_y(this.y, this.height));
+            this.anim.drawShip(c, this.box, this.imgIndex, this.thrust,
+                this.deltaThet > 0, this.deltaThet < 0, this.npc);
         }
         c.restore();
     }
 };
 
 spcw.Ship.prototype.collisionPoly = function () {
-    var center_x, center_y, c_angle;
-
-    center_x = this.x + this.width / 2;
-    center_y = this.y + this.height / 2;
-    c_angle = spcw.clamp_angle[this.img_index];
-    this.collide_poly[0][0] = center_x + 31 * Math.cos(c_angle - 0.044);
-    this.collide_poly[0][1] = center_y + 31 * -Math.sin(c_angle - 0.044);
-    this.collide_poly[1][0] = center_x + 21 * Math.cos(c_angle + 0.873);
-    this.collide_poly[1][1] = center_y + 21 * -Math.sin(c_angle + 0.873);
-    this.collide_poly[2][0] = center_x + 28 * Math.cos(c_angle + 2.409);
-    this.collide_poly[2][1] = center_y + 28 * -Math.sin(c_angle + 2.409);
-    this.collide_poly[3][0] = center_x + 31 * Math.cos(c_angle - 3.089);
-    this.collide_poly[3][1] = center_y + 31 * -Math.sin(c_angle - 3.089);
-    this.collide_poly[4][0] = center_x + 30 * Math.cos(c_angle - 2.339);
-    this.collide_poly[4][1] = center_y + 30 * -Math.sin(c_angle - 2.339);
-    this.collide_poly[5][0] = center_x + 23 * Math.cos(c_angle - 0.942);
-    this.collide_poly[5][1] = center_y + 23 * -Math.sin(c_angle - 0.942);
-
-    return this.collide_poly;
+    this.box.x = this.x;
+    this.box.y = this.y;
+    
+    return this.anim.getCollisionPoly(this.box, spcw.clampAngle[this.imgIndex]);
 };
 
-spcw.Ship.prototype.do_ai = function () {
-    var player_x, player_y, this_x, this_y, dist, player_angle, angle_diff;
+spcw.Ship.prototype.doAi = function () {
+    var playerX, playerY, thisX, thisY, dist, playerAngle, angleDiff;
 
-    player_x = spcw.player.x + spcw.player.width / 2;
-    player_y = spcw.player.y + spcw.player.height / 2;
-    this_x = this.x + this.width / 2;
-    this_y = this.y + this.height / 2;
+    playerX = spcw.player.x + spcw.player.width / 2;
+    playerY = spcw.player.y + spcw.player.height / 2;
+    thisX = this.x + this.width / 2;
+    thisY = this.y + this.height / 2;
 
-    player_angle = -Math.atan2(player_y - this_y, player_x - this_x);
-    if (player_angle < 0) player_angle += spcw._2PI;
+    playerAngle = -Math.atan2(playerY - thisY, playerX - thisX);
+    if (playerAngle < 0) playerAngle += spcw._2PI;
 
-    angle_diff = spcw.clamp_angle[this.img_index] - player_angle;
-    if (angle_diff < 0) angle_diff += spcw._2PI;
+    angleDiff = spcw.clampAngle[this.imgIndex] - playerAngle;
+    if (angleDiff < 0) angleDiff += spcw._2PI;
 
-    if (Math.abs(angle_diff) > 0.393) {
-        if (angle_diff < Math.PI) {
-            this.delta_thet = -spcw.TURN_SPEED * 2;
+    if (Math.abs(angleDiff) > 0.393) {
+        if (angleDiff < Math.PI) {
+            this.deltaThet = -spcw.TURN_SPEED * 2;
         } else {
-            this.delta_thet = spcw.TURN_SPEED * 2;
+            this.deltaThet = spcw.TURN_SPEED * 2;
         }
     } else {
-        this.delta_thet = 0;
+        this.deltaThet = 0;
     }
 
     dist = Math.sqrt(
-        Math.pow(this_x - player_x, 2) +
-        Math.pow(this_y - player_y, 2));
+        Math.pow(thisX - playerX, 2) +
+        Math.pow(thisY - playerY, 2));
 
     if (dist > 700) {
-        if (angle_diff < 0.314) {
+        if (angleDiff < 0.314) {
             this.thrust = true;
         } else {
             this.thrust = false;
@@ -410,7 +537,7 @@ spcw.Ship.prototype.do_ai = function () {
         this.firing = false;
     } else {
         this.thrust = false;
-        if (Math.abs(angle_diff) < 0.224) {
+        if (Math.abs(angleDiff) < 0.224) {
             this.firing = true;
         } else {
             this.firing = false;

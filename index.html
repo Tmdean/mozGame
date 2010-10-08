@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Space combat prototype</title>
+    <script language="JavaScript" src="js/jquery-1.4.2.min.js"></script>
+    <script language="JavaScript" src="js/jsgamesoup.js"></script>
+    <script language="JavaScript" src="js/constants.js"></script>
+    <script language="JavaScript" src="js/load-assets.js"></script>
+    <script language="JavaScript" src="js/draw.js"></script>
+    <script language="JavaScript" src="js/game.js"></script>
+    <script language="JavaScript">
+        var startGame;
+
+        startGame = function (gs) {
+            var w = new spcw.World(gs);
+            gs.addEntity(w);
+            gs.addEntity(new spcw.Planet(w));
+
+            spcw.player = new spcw.Ship(w, false);
+            spcw.ai = new spcw.Ship(w, true);
+
+            gs.addEntity(spcw.ai);
+            gs.addEntity(spcw.player);
+        };
+
+        $(function () {
+            var backgr, ctxBack, i;
+
+            spcw.loadAssets();
+
+            backgr = $('#background')[0];
+            ctxBack = backgr.getContext('2d');
+            ctxBack.fillStyle = '#000';
+            ctxBack.fillRect(0, 0, backgr.width, backgr.height);
+
+            for (i = 0; i < 500; i++) {
+                ctxBack.fillStyle = ['#333', '#666', '#999'][Math.floor(Math.random() * 3)]
+                ctxBack.fillRect(Math.random() * (backgr.width - 4),
+                    Math.random() * (backgr.height - 4),
+                    Math.random() * 3, Math.random() * 3);
+            }
+        });
+    </script>
+    <style type="text/css">
+        body {
+            background: #666;
+        }
+        
+        #offscreen {
+            display: none;
+        }
+        
+        #background, #game {
+            position: absolute;
+            width: 800px;
+            height: 600px;
+        }
+        
+        #info {
+            position: absolute;
+            left: 820px;
+            color: #fff;
+        }
+        
+        .status {
+            position: absolute;
+            top: 608px;
+            background: #333;
+            width: 234px;
+            height: 59px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            color: #999;
+            padding: 8px;
+            line-height: 20px;
+            font-weight: bold;
+        }
+        
+        .meter {
+            display: inline-block;
+            margin-left: 10px;
+            width: 100px;
+            height: 10px;
+            border: 1px solid #c99;
+        }
+        
+        .meter-label {
+            display: inline-block;
+            font-weight: normal;
+            width: 65px;
+        }
+        
+        #player-shield, #player-weapons, #ai-shield, #ai-weapons {
+            background: #f33;
+            width: 100px;
+            height: 10px;
+        }
+        
+        #player-status {
+            left: 8px;
+        }
+        
+        #ai-status {
+            left: 258px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="offscreen" width="64" height="64"></canvas>
+    <canvas id="background" width="800" height="600"></canvas>
+    <canvas id="game" jsgs="startGame" fps="50" width="800" height="600">
+    </canvas>
+    <div class="status" id="player-status">
+        Player<br />
+        <span class="meter-label">Shield</span>
+        <div class="meter">
+            <div id="player-shield"></div>
+        </div><br />
+        <span class="meter-label">Weapons</span>
+        <div class="meter">
+            <div id="player-weapons"></div>
+        </div>
+    </div>
+    <div class="status" id="ai-status">
+        Compooder<br />
+        <span class="meter-label">Shield</span>
+        <div class="meter">
+            <div id="ai-shield"></div>
+        </div><br />
+        <span class="meter-label">Weapons</span>
+        <div class="meter">
+            <div id="ai-weapons"></div>
+        </div>
+    </div>
+    <div id="info">
+        <code>
+            Delta thet: <span id="delta-thet">0</span><br />
+            Angle: <span id="angle">0</span><br />
+            Img index: <span id="img-index">0</span><br />
+            x: <span id="coord-x">0</span><br />
+            y: <span id="coord-y">0</span><br />
+            dx: <span id="dx">0</span><br />
+            dy: <span id="dy">0</span><br />
+            velocity: <span id="velocity">0</span><br />
+            screen-x: <span id="screen-x">0</span><br />
+            screen-y: <span id="screen-y">0</span>
+        </code>
+    </div>
+</body>
+</html>
