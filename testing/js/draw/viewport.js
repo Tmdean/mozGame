@@ -25,9 +25,9 @@ function viewport(game, params){
 viewport.prototype.clear = function(){
 	// Moving the translation back and forth makes sure 
 	// the clearRect clears The entire canvas.
-	//this.game.context.translate(-this.offset.x, -this.offset.y);
+	this.game.context.translate(-this.offset.x, -this.offset.y);
 	this.game.context.clearRect(0, 0, this.width, this.height);
-	//this.game.context.translate(this.offset.x, this.offset.y);
+	this.game.context.translate(this.offset.x, this.offset.y);
 }
 
 viewport.prototype.pan = function(x, y){
@@ -35,5 +35,6 @@ viewport.prototype.pan = function(x, y){
 	this.offset.x += x;
 	this.offset.y += y;
 	
+	this.game.context.translate(x, y);
 	this.game.background.pan(x, y)
 };

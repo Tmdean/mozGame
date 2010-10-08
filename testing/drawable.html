@@ -51,37 +51,40 @@
 					},
 					onBeforeMove : function(){
 						
-						var maxX = (this.state.x + this.params.width),
-							minX = (this.state.x),
-							maxY = (this.state.y + this.params.height),
-							minY = (this.state.y),
+						var maxX = (this.state.x + game.viewport.offset.x + this.params.width),
+							minX = (this.state.x + game.viewport.offset.x),
+							maxY = (this.state.y + game.viewport.offset.y + this.params.height),
+							minY = (this.state.y + game.viewport.offset.y),
 							difference;
 						
 						if ( maxX > game.viewport.width ){
 							difference = maxX - game.viewport.width;
 							game.viewport.pan(-difference, 0)
-							this.state.x -= difference;
+							//this.state.x -= difference;
 						}
 						
 						if ( minX < 0 ){
 							difference = 0 - minX;
 							game.viewport.pan(difference, 0)
-							this.state.x += difference;
+							//this.state.x += difference;
 						}
 						
 						if ( maxY > game.viewport.height ){
 							difference = maxY - game.viewport.height;
 							game.viewport.pan(0, -difference)
-							this.state.y -= difference;
+							//this.state.y -= difference;
 						}
 						
 						if ( minY < 0 ){
 							difference = 0 - minY;
 							game.viewport.pan(0, difference)
-							this.state.y += difference;
+							//this.state.y += difference;
 						}
+						
+						$('#playerX span').html(this.state.x);
+						$('#playerY span').html(this.state.y);
 					}
-				});/**/
+				});
 				
 				setTimeout(function(){
 					
@@ -98,5 +101,9 @@
 </head>
 <body>
 	<canvas id="backdrop"></canvas>
+	<ul>
+		<li id="playerX">Player X:  <span></span></li>
+		<li id="playerY">Player Y:  <span></span></li>
+	</ul>
 </body>
 </html>

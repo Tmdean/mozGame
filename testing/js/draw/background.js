@@ -12,7 +12,7 @@ function background(game, params){
 	
 	this.render = function(){
 		
-		//this.game.context.translate(this.game.viewport.offset.x, this.game.viewport.offset.y);
+		this.game.context.translate(-this.game.viewport.offset.x, -this.game.viewport.offset.y);
 		
 		for (var i = 0; i < this.prop.stars.length; i++){
 			var star = this.prop.stars[i];
@@ -40,7 +40,7 @@ function background(game, params){
 
 		}
 		
-		//this.game.context.translate(-this.game.viewport.offset.x, -this.game.viewport.offset.y);
+		this.game.context.translate(this.game.viewport.offset.x, this.game.viewport.offset.y);
 	};
 	
 	this.pan = function(x, y){
