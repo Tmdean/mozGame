@@ -1,7 +1,9 @@
 (function () {
-    /* Ship rendering object.. A ShipRenderer is built for every ship in the
+    var spcw = window.spcw;
+    
+    /* Ship rendering object. A ShipRenderer is built for every ship in the
     game. */
-    window.spcw.ShipRenderer = function () {
+    spcw.ShipRenderer = function () {
         this.explodeTimer = 0;
         this.collisionPoly = [
             [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]
@@ -13,19 +15,15 @@
         collision-detection purposes.
         
         Parameters:
-            {spcw.Box} box: Dimensions of ship in game coordinates
+            {spcw.Box} box: Dimension/location of ship in game coordinates
             {unsigned long} angle: Angle of ship in radians
     */
-    window.spcw.ShipRenderer.prototype.getCollisionPoly = function (box,
-        angle)
-    {
-        var centerX, centerY, cAngle;
+    spcw.ShipRenderer.prototype.getCollisionPoly = function (box, angle) {
+        var centerX, centerY;
     
         centerX = box.centerX();
         centerY = box.centerY();
         
-        cAngle = spcw.clampAngle[angle];
-
         this.collisionPoly[0][0] = centerX + 31 * Math.cos(angle - 0.044);
         this.collisionPoly[0][1] = centerY + 31 * -Math.sin(angle - 0.044);
         this.collisionPoly[1][0] = centerX + 21 * Math.cos(angle + 0.873);
@@ -47,7 +45,7 @@
         
         Parameters:
             {CanvasRenderingContext2D} ctx: Pre-scaled canvas context
-            {spcw.Box} box: Dimensions of ship in screen coordinates
+            {spcw.Box} box: Dimension/location of ship in screen coordinates
             {unsigned long} angle: Angle of ship in range [0, 16) (see
                 spcw.clampAngle in constants.js)
             {Boolean} forward: True if forward thrusters on
@@ -55,8 +53,8 @@
             {Boolean} right: True if right thrusters on
             {Boolean} npc: True if object to render is an AI-controlled ship
     */
-    window.spcw.ShipRenderer.prototype.drawShip = function (ctx, box, angle,
-        forward, left, right, npc)
+    spcw.ShipRenderer.prototype.drawShip = function (ctx, box, angle, forward,
+        left, right, npc)
     {
         ctx.drawImage(spcw.imgAsset[angle], box.x, box.y);
 
@@ -73,9 +71,9 @@
         
         Parameters:
             {CanvasRenderingContext2D} ctx: Pre-scaled canvas context.
-            {spcw.Box} box: Dimensions of explosion in screen coordinates
+            {spcw.Box} box: Dimension/location of explosion in screen coordinates
     */
-    window.spcw.ShipRenderer.prototype.drawExplosion = function (ctx, box) {
+    spcw.ShipRenderer.prototype.drawExplosion = function (ctx, box) {
         var explodeFrame;
         
         if (this.explodeTimer > 5) {
@@ -94,13 +92,13 @@
     };
     
     /*
-        Background rendering object. Draws the scrolling starfield.
+        Background rendering object. Draws the scrolling grid.
         
         Parameters:
             {unsigned long} width: width of arena (same as spcw.WORLD_WIDTH)
             {unsigned long} height: height of arena (same as spcw.WORLD_HEIGHT)
     */
-    window.spcw.BackgroundRenderer = function (width, height) {
+    spcw.BackgroundRenderer = function (width, height) {
         this.width = width;
         this.height = height;
     };
@@ -122,7 +120,7 @@
         Note: The magnitudes of scrollX2 - scrollX and scrollY2 - scrollY
             vary depending on the current zoom level.
     */
-    window.spcw.BackgroundRenderer.prototype.drawBackground = function (ctx,
+    spcw.BackgroundRenderer.prototype.drawBackground = function (ctx,
         scrollX, scrollY, scrollX2, scrollY2)
     {
         var screenWidth, screenHeight, x, y;

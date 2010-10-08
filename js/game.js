@@ -7,7 +7,8 @@ spcw.World = function (gs) {
     this.anchors = [];
     this.anchorCount = 0;
     this.gs = gs;
-    this.anim = new spcw.BackgroundRenderer(spcw.WORLD_WIDTH, spcw.WORLD_HEIGHT);
+    this.anim = new spcw.BackgroundRenderer(spcw.WORLD_WIDTH,
+        spcw.WORLD_HEIGHT);
 };
 
 spcw.World.prototype.addAnchor = function (anchor) {
