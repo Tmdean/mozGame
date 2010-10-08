@@ -11,7 +11,7 @@ drawable = {
 		
 		this.canvas = game.canvas;
 		this.game = game;
-		this.context = this.canvas.getContext('2d')
+		this.context = game.context;
 		this.params = params || {};
 		
 		this.x = this.params.x || 0;

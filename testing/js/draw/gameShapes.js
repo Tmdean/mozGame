@@ -1,19 +1,15 @@
 function initShapes(game){
 	game.shapes = {
-		player1 : function(params){
+		player1 : function(entity, params, state){
 			
-			// Testing something
-			// Yay, the reference is maintained!
-			//log(game.keymap)
-			
-			/*polygon({
-				pointsX : 
-				pointsY :
-				offsetX :
-				offsetY :
-				color :
-				context : 
-			})*/
+			polygon({
+				pointsX : [0, ( params.width / 2) , params.width],
+				pointsY : [params.height, 0, params.height],
+				offsetX : state.x,
+				offsetY : state.y,
+				color : params.color,
+				context : entity.context
+			})
 		}
 	};
 }
