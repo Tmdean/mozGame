@@ -1,6 +1,6 @@
 (function () {
-    /* Object responsible for rendering ships. A ShipRenderer is built for
-    every ship in the game. */
+    /* Ship rendering object.. A ShipRenderer is built for every ship in the
+    game. */
     window.spcw.ShipRenderer = function () {
         this.explodeTimer = 0;
         this.collisionPoly = [
@@ -92,4 +92,58 @@
 
         this.explodeTimer++;
     };
+    
+    /*
+        Background rendering object. Draws the scrolling starfield.
+        
+        Parameters:
+            {unsigned long} width: width of arena (same as spcw.WORLD_WIDTH)
+            {unsigned long} height: height of arena (same as spcw.WORLD_HEIGHT)
+    */
+    window.spcw.BackgroundRenderer = function (width, height) {
+        this.width = width;
+        this.height = height;
+    };
+    
+    /*
+        Renders the background.
+        
+        Parameters:
+            {CanvasRenderingContext2D} ctx: Pre-scaled canvas context.
+            {double} scrollX: Upper-left x-position of screen in game
+                coordinates. Ranges from 0 to spcw.WORLD_WIDTH
+            {double} scrollY: Upper-left y-position of screen in game
+                coordinates. Ranges from 0 to spcw.WORLD_HEIGHT
+            {double} scrollX2: Lower-right x-position of screen in game
+                coordinates. Ranges from 0 to spcw.WORLD_WIDTH * 2
+            {double} scrollX2: Lower right y-position of screen in game
+                coordinates. Ranges from 0 to spcw.WORLD_HEIGHT * 2
+        
+        Note: The magnitudes of scrollX2 - scrollX and scrollY2 - scrollY
+            vary depending on the current zoom level.
+    */
+    window.spcw.BackgroundRenderer.prototype.drawBackground = function (ctx,
+        scrollX, scrollY, scrollX2, scrollY2)
+    {
+        var screenWidth, screenHeight, x, y;
+        
+        screenWidth = scrollX2 - scrollX + 1;
+        screenHeight = scrollY2 - scrollY + 1;
+
+        ctx.strokeStyle = '#99f';
+        ctx.globalAlpha = 0.5;        
+        for (x = (100 - scrollX) % 100; x < screenWidth; x += 100) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, screenHeight);
+            ctx.stroke();
+        }
+        
+        for (y = (100 - scrollY) % 100; y < screenHeight; y += 100) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(screenWidth, y);
+            ctx.stroke();
+        }
+    }
 }());

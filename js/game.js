@@ -7,6 +7,7 @@ spcw.World = function (gs) {
     this.anchors = [];
     this.anchorCount = 0;
     this.gs = gs;
+    this.anim = new spcw.BackgroundRenderer(spcw.WORLD_WIDTH, spcw.WORLD_HEIGHT);
 };
 
 spcw.World.prototype.addAnchor = function (anchor) {
@@ -176,6 +177,14 @@ spcw.World.prototype.update = function (gs) {
     this.screenY2 = this.screenY + zoomInv * gs.height;
 };
 
+spcw.World.prototype.draw = function (c, gs) {
+    c.save();
+    this.scale(c);
+    this.anim.drawBackground(c, this.screenX, this.screenY,
+        this.screenX2, this.screenY2);
+    c.restore();
+};
+
 spcw.World.prototype.scale = function (ctx) {
     ctx.scale(this.screenZoom, this.screenZoom);
 };
@@ -280,7 +289,7 @@ spcw.Bullet.prototype.collisionPoly = function () {
     var centerX, centerY, angleA, angleB, h;
 
     centerX = 2 * this.x + this.dx;
-    if (dx < 0) {
+    if (this.dx < 0) {
         centerX -= this.width;
     } else {
         centerX += this.width;
@@ -288,7 +297,7 @@ spcw.Bullet.prototype.collisionPoly = function () {
     centerX /= 2;
 
     centerY = 2 * this.y + this.dy;
-    if (dy < 0) {
+    if (this.dy < 0) {
         centerY -= this.width;
     } else {
         centerY += this.height;
