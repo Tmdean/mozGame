@@ -4,8 +4,11 @@ function entity(game, params){
 
 	this.render = function(){
 		
+		// Draw the entity's state
 		if (this.params.gameShape){
+			this.params.onBeforeMove && this.params.onBeforeMove.call(this);
 			this.params.gameShape(this, this.params, this.state);
+			this.params.onAfterMove && this.params.onAfterMove.call(this);
 		} else {
 			log('No shape provided for entity ' + this);
 		}

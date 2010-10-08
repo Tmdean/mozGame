@@ -3,18 +3,18 @@ var speed = 10;
 
 var keyMaps = {
 	'37' : function(game){ // Left
-		game.viewport.pan(speed, 0);
+		game.player1.state.x -= speed;
 	},
 	
 	'38' : function(game){ // Up
-		game.viewport.pan(0, speed);
+		game.player1.state.y -= speed;
 	},
 	
 	'39' : function(game){ // Right
-		game.viewport.pan(-speed, 0);
+		game.player1.state.x += speed;
 	},
 	
 	'40' : function(game){ // Down
-		game.viewport.pan(0, -speed);
+		game.player1.state.y += speed;
 	}
 };

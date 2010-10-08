@@ -36,7 +36,7 @@
 				game.context = game.canvas.getContext('2d');
 				
 				game.viewport = new viewport(game);
-				game.bg = new background(game);
+				game.background = new background(game);
 				initShapes(game);
 				
 				// Testing player shapes
@@ -48,6 +48,38 @@
 					state : {
 						x : 50,
 						y : 50
+					},
+					onBeforeMove : function(){
+						
+						var maxX = (this.state.x + this.params.width),
+							minX = (this.state.x),
+							maxY = (this.state.y + this.params.height),
+							minY = (this.state.y),
+							difference;
+						
+						if ( maxX > game.viewport.width ){
+							difference = maxX - game.viewport.width;
+							game.viewport.pan(-difference, 0)
+							this.state.x -= difference;
+						}
+						
+						if ( minX < 0 ){
+							difference = 0 - minX;
+							game.viewport.pan(difference, 0)
+							this.state.x += difference;
+						}
+						
+						if ( maxY > game.viewport.height ){
+							difference = maxY - game.viewport.height;
+							game.viewport.pan(0, -difference)
+							this.state.y -= difference;
+						}
+						
+						if ( minY < 0 ){
+							difference = 0 - minY;
+							game.viewport.pan(0, difference)
+							this.state.y += difference;
+						}
 					}
 				});/**/
 				
