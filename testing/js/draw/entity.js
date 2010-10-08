@@ -8,7 +8,6 @@ function entity(game, params){
 		if (this.params.gameShape){
 			this.params.onBeforeMove && this.params.onBeforeMove.call(this);
 			this.params.gameShape(this, this.params, this.state);
-			//this.params.gameShape.apply(this, [this, this.params, this.state]);
 			this.params.onAfterMove && this.params.onAfterMove.call(this);
 		} else {
 			log('No shape provided for entity ' + this);
