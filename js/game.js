@@ -333,18 +333,22 @@ spcw.Ship = function (world, npc) {
     this.angle = Math.random() * spcw._2PI;
     this.x = Math.random() * (spcw.WORLD_WIDTH - 256) + 128;
     this.y = Math.random() * (spcw.WORLD_HEIGHT - 256) + 128;
+    this.width = 64;
+    this.height = 64;
     this.dx = 0;
     this.dy = 0;
     this.veloc = 0;
-    this.width = 64;
-    this.height = 64;
     this.fireTimeout = spcw.FIRING_DELAY;
     this.energy = 100;
     this.shield = 100;
     this.exploding = false;
     this.explodeFrame = 0;
     this.explodeTimeout = 0;
-    this.collidePoly = [ [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0] ];
+
+    this.box = new spcw.Box();
+    this.box.width = this.width;
+    this.box.height = this.height;
+    this.anim = new spcw.ShipRenderer();
 
     world.addAnchor(this);
 
@@ -389,8 +393,7 @@ spcw.Ship.prototype.update = function (gs) {
         this.angle += spcw._2PI;
     }
 
-    this.imgIndex = Math.round(
-        this.angle / (Math.PI / 8)) % 16;
+    this.imgIndex = Math.round(this.angle / (Math.PI / 8)) % 16;
 
     cAngle = spcw.clampAngle[this.imgIndex];
     centerX = this.x + this.width / 2;
@@ -463,54 +466,29 @@ spcw.Ship.prototype.draw = function (c, gs) {
         $('#dy').text(this.dy);
         $('#velocity').text(this.veloc);
     }
+    
+    this.box.x = this.world.translateX(this.x, this.width);
+    this.box.y = this.world.translateY(this.y, this.height);
 
     if (spcw.assetsLoaded) {
         c.save();
         this.world.scale(c);
 
         if (this.exploding) {
-            c.drawImage(spcw.imgAsset[17 + this.explodeFrame],
-                this.world.translateX(this.x, this.width),
-                this.world.translateY(this.y, this.height));
-        } else if (this.npc) {
-            c.drawImage(spcw.imgAsset[this.imgIndex],
-                this.world.translateX(this.x, this.width),
-                this.world.translateY(this.y, this.height));
-            c.fillStyle = '#f00';
-            c.globalAlpha = 0.65;
-            c.globalCompositeOperation = 'source-atop';
-            c.fillRect(this.world.translateX(this.x, this.width),
-                this.world.translateY(this.y, this.height),
-                this.width, this.height);
+            this.anim.drawExplosion(c, this.box);
         } else {
-            c.drawImage(spcw.imgAsset[this.imgIndex],
-                this.world.translateX(this.x, this.width),
-                this.world.translateY(this.y, this.height));
+            this.anim.drawShip(c, this.box, this.imgIndex, this.thrust,
+                this.deltaThet > 0, this.deltaThet < 0, this.npc);
         }
         c.restore();
     }
 };
 
 spcw.Ship.prototype.collisionPoly = function () {
-    var centerX, centerY, cAngle;
-
-    centerX = this.x + this.width / 2;
-    centerY = this.y + this.height / 2;
-    cAngle = spcw.clampAngle[this.imgIndex];
-    this.collidePoly[0][0] = centerX + 31 * Math.cos(cAngle - 0.044);
-    this.collidePoly[0][1] = centerY + 31 * -Math.sin(cAngle - 0.044);
-    this.collidePoly[1][0] = centerX + 21 * Math.cos(cAngle + 0.873);
-    this.collidePoly[1][1] = centerY + 21 * -Math.sin(cAngle + 0.873);
-    this.collidePoly[2][0] = centerX + 28 * Math.cos(cAngle + 2.409);
-    this.collidePoly[2][1] = centerY + 28 * -Math.sin(cAngle + 2.409);
-    this.collidePoly[3][0] = centerX + 31 * Math.cos(cAngle - 3.089);
-    this.collidePoly[3][1] = centerY + 31 * -Math.sin(cAngle - 3.089);
-    this.collidePoly[4][0] = centerX + 30 * Math.cos(cAngle - 2.339);
-    this.collidePoly[4][1] = centerY + 30 * -Math.sin(cAngle - 2.339);
-    this.collidePoly[5][0] = centerX + 23 * Math.cos(cAngle - 0.942);
-    this.collidePoly[5][1] = centerY + 23 * -Math.sin(cAngle - 0.942);
-
-    return this.collidePoly;
+    this.box.x = this.x;
+    this.box.y = this.y;
+    
+    return this.anim.getCollisionPoly(this.box, spcw.clampAngle[this.imgIndex]);
 };
 
 spcw.Ship.prototype.doAi = function () {

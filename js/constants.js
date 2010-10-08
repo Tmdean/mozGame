@@ -66,3 +66,27 @@ spcw.RECHARGE_RATE = 0.2;
 
 /* Delay between bullet firings in frames. */
 spcw.FIRING_DELAY = 10;
+
+/* Data types */
+
+spcw.Box = function (x, y, width, height) {
+    if (arguments.length === 4) {
+        this.x = arguments[0];
+        this.y = arguments[1];
+        this.width = arguments[2];
+        this.height = arguments[3];
+    } else {
+        this.x = 0;
+        this.y = 0;
+        this.width = 0;
+        this.height = 0;
+    }
+};
+
+spcw.Box.prototype.centerX = function () {
+    return this.x + this.width / 2;
+};
+
+spcw.Box.prototype.centerY = function () {
+    return this.y + this.height / 2;
+};
