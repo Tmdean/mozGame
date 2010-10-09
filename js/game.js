@@ -9,6 +9,7 @@ spcw.World = function (gs) {
     this.gs = gs;
     this.anim = new spcw.BackgroundRenderer(spcw.WORLD_WIDTH,
         spcw.WORLD_HEIGHT);
+    this.lastFrame = new Date().getTime();
 };
 
 spcw.World.prototype.addAnchor = function (anchor) {
@@ -73,6 +74,8 @@ spcw.World.prototype.findMinExtent = function (cmp) {
 spcw.World.prototype.update = function (gs) {
     var i, anchor, minExtent, minX, midX, maxX, minY, midY, maxY, newZoom,
         newX, newY, screenWidth, screenHeight, zoomInv;
+    
+    if (!$('#auto-camera:checked').length) return;
 
     for (i = 0; i < this.anchors.length; i++) {
         anchor = this.anchors[i];
@@ -121,9 +124,7 @@ spcw.World.prototype.update = function (gs) {
         gs.height / screenHeight));
     newX = midX - (gs.width / this.screenZoom) / 2;
     newY = midY - (gs.height / this.screenZoom) / 2;
-    $('#screen-x').text(newX);
-    $('#screen-y').text(newY);
-    
+   
     if (Math.abs(this.screenX + spcw.WORLD_WIDTH - newX) <
         Math.abs(this.screenX - newX))
     {
@@ -176,6 +177,32 @@ spcw.World.prototype.update = function (gs) {
     zoomInv = 1 / this.screenZoom;
     this.screenX2 = this.screenX + zoomInv * gs.width;
     this.screenY2 = this.screenY + zoomInv * gs.height;
+    this.updateDebugInfo();
+};
+
+spcw.World.prototype.updateDebugInfo = function () {
+    var $gameArea, $screenArea, gameAreaOffset, width, height, x1, y1, x2, y2;
+    
+    $gameArea = $('#game-area');
+    gameAreaOffset = $gameArea.offset();
+    
+    width = $gameArea.width() / spcw.WORLD_WIDTH;
+    height = $gameArea.height() / spcw.WORLD_HEIGHT;
+    x1 = Math.round(this.screenX * width);
+    y1 = Math.round(this.screenY * height);
+    x2 = Math.round(this.screenX2 * width);
+    y2 = Math.round(this.screenY2 * height);
+    $screenArea = $('#screen-area');
+    $screenArea.offset({
+        left: x1 + gameAreaOffset.left,
+        top: y1 + gameAreaOffset.top});
+    $screenArea.width(x2 - x1);
+    $screenArea.height(y2 - y1);
+    
+    $('#screen-x').text(this.screenX.toFixed(3));
+    $('#screen-y').text(this.screenY.toFixed(3));
+    $('#fps').text((1000 / (new Date().getTime() - this.lastFrame)).toFixed(3));
+    this.lastFrame = new Date().getTime();
 };
 
 spcw.World.prototype.draw = function (c, gs) {
@@ -385,6 +412,8 @@ spcw.Ship = function (world, npc) {
 
 spcw.Ship.prototype.update = function (gs) {
     var bulletX, bulletY, bulletDX, bulletDY, cAngle, centerX, centerY;
+    
+    if (!$('#update-ships:checked').length) return;
 
     if (this.npc) {
         this.doAi();
@@ -467,14 +496,14 @@ spcw.Ship.prototype.update = function (gs) {
 
 spcw.Ship.prototype.draw = function (c, gs) {
     if (!this.npc) {
-        $('#delta-thet').text(this.deltaThet);
-        $('#angle').text(this.angle);
-        $('#img-index').text(this.imgIndex);
-        $('#coord-x').text(this.x);
-        $('#coord-y').text(this.y);
-        $('#dx').text(this.dx);
-        $('#dy').text(this.dy);
-        $('#velocity').text(this.veloc);
+        $('#delta-thet').text(this.deltaThet.toFixed(3));
+        $('#angle').text(this.angle.toFixed(3));
+        $('#img-index').text(this.imgIndex.toFixed(3));
+        $('#coord-x').text(this.x.toFixed(3));
+        $('#coord-y').text(this.y.toFixed(3));
+        $('#dx').text(this.dx.toFixed(3));
+        $('#dy').text(this.dy.toFixed(3));
+        $('#velocity').text(this.veloc.toFixed(3));
     }
     
     this.box.x = this.world.translateX(this.x, this.width);

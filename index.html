@@ -3,17 +3,19 @@
 <head>
     <meta charset="utf-8" />
     <title>Space combat prototype</title>
+    <link rel="stylesheet" href="css/smoothness/jquery-ui-1.8.5.custom.css" />
     <script language="JavaScript" src="js/jquery-1.4.2.min.js"></script>
+    <script language="JavaScript" src="js/jquery-ui-1.8.5.custom.min.js"></script>
     <script language="JavaScript" src="js/jsgamesoup.js"></script>
     <script language="JavaScript" src="js/constants.js"></script>
     <script language="JavaScript" src="js/load-assets.js"></script>
     <script language="JavaScript" src="js/draw.js"></script>
     <script language="JavaScript" src="js/game.js"></script>
     <script language="JavaScript">
-        var startGame;
+        var startGame, w;
 
         startGame = function (gs) {
-            var w = new spcw.World(gs);
+            w = new spcw.World(gs);
             gs.addEntity(w);
             gs.addEntity(new spcw.Planet(w));
 
@@ -25,36 +27,90 @@
         };
 
         $(function () {
-            var backgr, ctxBack, i;
+            var backgr, ctxBack, i, $gameArea, left, top, width, height,
+                initLeft, initTop, initScreenX, initScreenY,
+                initScreenX2, initScreenY2, xScale, yScale, gs,
+                initMidX, initMidY;
 
             spcw.loadAssets();
-
-            backgr = $('#background')[0];
-            ctxBack = backgr.getContext('2d');
-            ctxBack.fillStyle = '#000';
-            ctxBack.fillRect(0, 0, backgr.width, backgr.height);
-
-            for (i = 0; i < 500; i++) {
-                ctxBack.fillStyle = ['#333', '#666', '#999'][Math.floor(Math.random() * 3)]
-                ctxBack.fillRect(Math.random() * (backgr.width - 4),
-                    Math.random() * (backgr.height - 4),
-                    Math.random() * 3, Math.random() * 3);
-            }
+            
+            $gameArea = $('#game-area');
+            left = $gameArea.offset().left;
+            top = $gameArea.offset().top;
+            width = $gameArea.width();
+            height = $gameArea.height();
+            xScale = width / spcw.WORLD_WIDTH;
+            yScale = height / spcw.WORLD_HEIGHT;
+            gs = $('#game')[0];
+            
+            $('#screen-area').draggable({
+                cursor: 'move',
+                containment: [left + 1, top + 1, left + width, top + height],
+                start: function (event, ui) {
+                    initLeft = ui.offset.left;
+                    initTop = ui.offset.top;
+                    initScreenX = w.screenX;
+                    initScreenY = w.screenY;
+                    initScreenX2 = w.screenX2;
+                    initScreenY2 = w.screenY2;
+                    $('#auto-camera').attr('checked', false);
+                },
+                drag: function (event, ui) {
+                    var offsetX, offsetY;
+                    offsetX = (ui.offset.left - initLeft) / xScale;
+                    offsetY = (ui.offset.top - initTop) / yScale;
+                    w.screenX = initScreenX + offsetX;
+                    w.screenY = initScreenY + offsetY;
+                    w.screenX2 = initScreenX2 + offsetX;
+                    w.screenY2 = initScreenY2 + offsetY;
+                }
+            });
+            
+            $('#screen-area').resizable({
+                start: function (event, ui) {
+                    initMidX = (w.screenX + w.screenX2) / 2;
+                    initMidY = (w.screenY + w.screenY2) / 2;
+                    $('#auto-camera').attr('checked', false);
+                },
+                resize: function (event, ui) {
+                    var screenWidth, screenHeight;
+                    
+                    screenWidth = ui.size.width / xScale;
+                    screenHeight = ui.size.height / yScale;
+                    
+                    w.screenZoom = Math.max(spcw.CAMERA_MIN_ZOOM,
+                        Math.min(gs.width / screenWidth, gs.height / screenHeight));
+                    
+                    screenWidth = gs.width / w.screenZoom;
+                    screenHeight = gs.height / w.screenZoom;
+                    
+                    w.screenX = initMidX - screenWidth / 2;
+                    w.screenY = initMidY - screenHeight / 2;
+                    w.screenX2 = w.screenX + screenWidth;
+                    w.screenY2 = w.screenY + screenHeight;
+                    w.updateDebugInfo();
+                }
+            });
         });
     </script>
     <style type="text/css">
         body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+
             background: #666;
+            font-family: Arial, sans-serif;
         }
         
         #offscreen {
             display: none;
         }
         
-        #background, #game {
+        #game {
             position: absolute;
             width: 800px;
             height: 600px;
+            background: black;
         }
         
         #info {
@@ -63,15 +119,51 @@
             color: #fff;
         }
         
+        #debug {
+            position: absolute;
+            left: 820px;
+            top: 250px;
+            color: #fff;
+            background: #333;
+            width: 230px;
+            height: 338px;
+            padding: 10px;
+        }
+        
+        #debug h4 {
+            margin: 0;
+        }
+        
+        #debug form {
+            margin-top: 10px;
+        }
+        
+        #game-area {
+            position: relative;
+            top: 8px;
+            
+            width: 125px;
+            height: 94px;
+            border: 1px solid #fff;
+        }
+        
+        #screen-area {
+            position: absolute;
+            width: 50px;
+            height: 38px;
+            border: 1px solid #ccc;
+            background: #666;
+            cursor: move;
+        }
+        
         .status {
             position: absolute;
-            top: 608px;
+            top: 620px;
             background: #333;
             width: 234px;
             height: 59px;
-            font-family: Arial, sans-serif;
             font-size: 14px;
-            color: #999;
+            color: #fff;
             padding: 8px;
             line-height: 20px;
             font-weight: bold;
@@ -82,7 +174,7 @@
             margin-left: 10px;
             width: 100px;
             height: 10px;
-            border: 1px solid #c99;
+            border: 1px solid #fff;
         }
         
         .meter-label {
@@ -92,7 +184,7 @@
         }
         
         #player-shield, #player-weapons, #ai-shield, #ai-weapons {
-            background: #f33;
+            background: #666;
             width: 100px;
             height: 10px;
         }
@@ -108,7 +200,6 @@
 </head>
 <body>
     <canvas id="offscreen" width="64" height="64"></canvas>
-    <canvas id="background" width="800" height="600"></canvas>
     <canvas id="game" jsgs="startGame" fps="50" width="800" height="600">
     </canvas>
     <div class="status" id="player-status">
@@ -144,8 +235,21 @@
             dy: <span id="dy">0</span><br />
             velocity: <span id="velocity">0</span><br />
             screen-x: <span id="screen-x">0</span><br />
-            screen-y: <span id="screen-y">0</span>
+            screen-y: <span id="screen-y">0</span><br />
+            fps: <span id="fps">0</span>
         </code>
+    </div>
+    <div id="debug">
+        <h4>Debug</h4>
+        <form>
+            <input id="update-ships" type="checkbox" checked="checked"></input>
+            <label for="update-ships">Update ships</label><br />
+            <input id="auto-camera" type="checkbox" checked="checked"></input>
+            <label for="auto-camera">Auto camera</label>
+            <div id="game-area">
+                <div id="screen-area"></div>
+            </div>
+        </form>
     </div>
 </body>
 </html>

@@ -67,6 +67,11 @@ spcw.RECHARGE_RATE = 0.2;
 /* Delay between bullet firings in frames. */
 spcw.FIRING_DELAY = 10;
 
+/* Constants affecting the star-field background. */
+spcw.NUM_STARS = 1000;
+spcw.MAX_STAR_SIZE = 4;
+spcw.STARFIELD_DEPTH = 2;
+
 /* Data types */
 
 spcw.Box = function (x, y, width, height) {

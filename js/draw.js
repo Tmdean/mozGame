@@ -1,5 +1,7 @@
 (function () {
-    var spcw = window.spcw;
+    var spcw;
+    
+    spcw = window.spcw;
     
     /* Ship rendering object. A ShipRenderer is built for every ship in the
     game. */
@@ -99,8 +101,22 @@
             {unsigned long} height: height of arena (same as spcw.WORLD_HEIGHT)
     */
     spcw.BackgroundRenderer = function (width, height) {
+        var i, maxX, maxX, x, y, radius;
+        
         this.width = width;
         this.height = height;
+        this.stars = [];
+        
+        maxX = this.width;
+        maxY = this.height;
+        
+        for (i = 0; i < spcw.NUM_STARS; i++) {
+            x = Math.random() * maxX;
+            y = Math.random() * maxY;
+            radius = Math.random() * spcw.MAX_STAR_SIZE;
+            
+            this.stars.push({ x: x, y: y, radius: radius });
+        }
     };
     
     /*
@@ -123,25 +139,56 @@
     spcw.BackgroundRenderer.prototype.drawBackground = function (ctx,
         scrollX, scrollY, scrollX2, scrollY2)
     {
-        var screenWidth, screenHeight, x, y;
+        var screenWidth, screenHeight, scrollCenterX, scrollCenterY;
         
         screenWidth = scrollX2 - scrollX + 1;
         screenHeight = scrollY2 - scrollY + 1;
+        scrollCenterX = (scrollX + scrollX2) / 2;
+        scrollCenterY = (scrollY + scrollY2) / 2;
+
+        this.drawStars(ctx, scrollX, scrollY, screenWidth, screenHeight);
+        this.drawGrid(ctx, scrollX, scrollY, screenWidth, screenHeight);
+    };
+    
+    spcw.BackgroundRenderer.prototype.drawStars = function (ctx,
+        scrollX, scrollY, screenWidth, screenHeight)
+    {
+        var i, star, x, y;
+        
+        ctx.fillStyle = '#fff';
+
+        for (i = 0; i < this.stars.length; i++) {
+            star = this.stars[i];
+            x = star.x - scrollX;
+            y = star.y - scrollY;
+            while (x < 0) x += this.width;
+            while (y < 0) y += this.height;
+            
+            if (x < screenWidth && y < screenHeight) {
+                ctx.fillRect(x, y, star.radius, star.radius);
+            }
+        }
+    };
+    
+    spcw.BackgroundRenderer.prototype.drawGrid = function (ctx,
+        scrollX, scrollY, width, height)
+    {
+        var x, y;
 
         ctx.strokeStyle = '#99f';
-        ctx.globalAlpha = 0.5;        
-        for (x = (100 - scrollX) % 100; x < screenWidth; x += 100) {
+        ctx.globalAlpha = 0.5;
+        for (x = (100 - scrollX) % 100; x < width; x += 100) {
             ctx.beginPath();
             ctx.moveTo(x, 0);
-            ctx.lineTo(x, screenHeight);
+            ctx.lineTo(x, height);
             ctx.stroke();
         }
-        
-        for (y = (100 - scrollY) % 100; y < screenHeight; y += 100) {
+
+        for (y = (100 - scrollY) % 100; y < height; y += 100) {
             ctx.beginPath();
             ctx.moveTo(0, y);
-            ctx.lineTo(screenWidth, y);
+            ctx.lineTo(width, y);
             ctx.stroke();
         }
-    }
+    };
 }());
