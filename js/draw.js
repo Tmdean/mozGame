@@ -107,12 +107,12 @@
         this.height = height;
         this.stars = [];
         
-        maxX = this.width;
-        maxY = this.height;
+        maxX = this.width * spcw.STARFIELD_DEPTH;
+        maxY = this.height * spcw.STARFIELD_DEPTH;
         
         for (i = 0; i < spcw.NUM_STARS; i++) {
-            x = Math.random() * maxX;
-            y = Math.random() * maxY;
+            x = -Math.random() * maxX;
+            y = -Math.random() * maxY;
             radius = Math.random() * spcw.MAX_STAR_SIZE;
             
             this.stars.push({ x: x, y: y, radius: radius });
@@ -139,12 +139,10 @@
     spcw.BackgroundRenderer.prototype.drawBackground = function (ctx,
         scrollX, scrollY, scrollX2, scrollY2)
     {
-        var screenWidth, screenHeight, scrollCenterX, scrollCenterY;
+        var screenWidth, screenHeight;
         
         screenWidth = scrollX2 - scrollX + 1;
         screenHeight = scrollY2 - scrollY + 1;
-        scrollCenterX = (scrollX + scrollX2) / 2;
-        scrollCenterY = (scrollY + scrollY2) / 2;
 
         this.drawStars(ctx, scrollX, scrollY, screenWidth, screenHeight);
         this.drawGrid(ctx, scrollX, scrollY, screenWidth, screenHeight);
@@ -153,19 +151,36 @@
     spcw.BackgroundRenderer.prototype.drawStars = function (ctx,
         scrollX, scrollY, screenWidth, screenHeight)
     {
-        var i, star, x, y;
+        var i, star, x, y, xTransform, yTransform, halfWidth, halfHeight,
+            widthOffset, heightOffset, initY;
         
         ctx.fillStyle = '#fff';
 
+        halfWidth = screenWidth / 2;
+        halfHeight = screenHeight / 2;
+        widthOffset = halfWidth * spcw.STARFIELD_DEPTH;
+        heightOffset = halfHeight * spcw.STARFIELD_DEPTH;
+        
         for (i = 0; i < this.stars.length; i++) {
             star = this.stars[i];
             x = star.x - scrollX;
             y = star.y - scrollY;
-            while (x < 0) x += this.width;
-            while (y < 0) y += this.height;
+
+            while (x < -widthOffset) x += this.width;
+            while (y < -heightOffset) y += this.height;
             
-            if (x < screenWidth && y < screenHeight) {
-                ctx.fillRect(x, y, star.radius, star.radius);
+            initY = y;
+            while (x < widthOffset + halfWidth) {
+                while (y < heightOffset + halfHeight) {
+                    ctx.fillRect(
+                        (x - halfWidth) / spcw.STARFIELD_DEPTH + halfWidth,
+                        (y - halfHeight) / spcw.STARFIELD_DEPTH + halfHeight,
+                        star.radius, star.radius);
+                    y += this.height;
+                }
+                
+                y = initY;
+                x += this.width;
             }
         }
     };

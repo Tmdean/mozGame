@@ -68,9 +68,9 @@ spcw.RECHARGE_RATE = 0.2;
 spcw.FIRING_DELAY = 10;
 
 /* Constants affecting the star-field background. */
-spcw.NUM_STARS = 1000;
-spcw.MAX_STAR_SIZE = 4;
-spcw.STARFIELD_DEPTH = 2;
+spcw.NUM_STARS = 300;
+spcw.MAX_STAR_SIZE = 3;
+spcw.STARFIELD_DEPTH = 3;
 
 /* Data types */
 
