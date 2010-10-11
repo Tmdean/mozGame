@@ -235,19 +235,28 @@
         
         this.width = width;
         this.height = height;
-        this.stars = [];
-        
-        maxX = this.width * spcw.STARFIELD_DEPTH;
-        maxY = this.height * spcw.STARFIELD_DEPTH;
-        
-        for (i = 0; i < spcw.NUM_STARS; i++) {
-            x = -Math.random() * maxX;
-            y = -Math.random() * maxY;
-            radius = Math.random() * spcw.MAX_STAR_SIZE;
-            
-            this.stars.push({ x: x, y: y, radius: radius });
-        }
+
+		this.generateStars(this.width, this.height);
     };
+
+	spcw.BackgroundRenderer.prototype.generateStars = function(width, height){
+		
+		var i, maxX, maxY;
+		
+		this.stars = [];
+		
+		maxX = this.width * spcw.STARFIELD_DEPTH;
+        maxY = this.height * spcw.STARFIELD_DEPTH;
+		
+		for (i = 0; i < spcw.NUM_STARS; i++){
+			this.stars.push({ 
+				x : -Math.random() * maxX,
+				y : -Math.random() * maxY,
+				radius : Math.random() * spcw.MAX_STAR_SIZE,
+				layer : parseInt((Math.random() * spcw.LAYER_RANDOMNESS) + 1)
+			});
+		}
+	};
     
     /*
         Renders the background.
@@ -293,8 +302,9 @@
         
         for (i = 0; i < this.stars.length; i++) {
             star = this.stars[i];
-            x = star.x - scrollX;
-            y = star.y - scrollY;
+
+			x = star.x - scrollX / (spcw.STAR_DETACHMENT * star.layer);
+			y = star.y - scrollY / (spcw.STAR_DETACHMENT * star.layer);
 
             while (x < -widthOffset) x += this.width;
             while (y < -heightOffset) y += this.height;
@@ -314,6 +324,15 @@
             }
         }
     };
+
+	spcw.BackgroundRenderer.prototype.panStars = function(x, y){
+		for (var i = 0; i < this.prop.stars.length; i++){
+			var star = this.prop.stars[i];
+
+			star.x += x / (spcw.STAR_DETACHMENT * star.layer);
+			star.y += y / (spcw.STAR_DETACHMENT * star.layer);
+		}
+	};
     
     spcw.BackgroundRenderer.prototype.drawGrid = function (ctx,
         scrollX, scrollY, width, height)

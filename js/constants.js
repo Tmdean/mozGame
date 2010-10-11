@@ -71,6 +71,8 @@ spcw.FIRING_DELAY = 10;
 spcw.NUM_STARS = 300;
 spcw.MAX_STAR_SIZE = 3;
 spcw.STARFIELD_DEPTH = 3;
+spcw.LAYER_RANDOMNESS = 10;
+spcw.STAR_DETACHMENT = 4;
 
 /* Data types */
 
