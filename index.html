@@ -8,7 +8,6 @@
     <script language="JavaScript" src="js/jquery-ui-1.8.5.custom.min.js"></script>
     <script language="JavaScript" src="js/jsgamesoup.js"></script>
     <script language="JavaScript" src="js/constants.js"></script>
-    <script language="JavaScript" src="js/load-assets.js"></script>
     <script language="JavaScript" src="js/draw.js"></script>
     <script language="JavaScript" src="js/game.js"></script>
     <script language="JavaScript">
@@ -32,8 +31,14 @@
                 initScreenX2, initScreenY2, xScale, yScale, gs,
                 initMidX, initMidY;
 
-            spcw.loadAssets();
+            $('#explode-player').click(function () {
+                spcw.player.shield = 0;
+            });
             
+            $('#explode-ai').click(function () {
+                spcw.ai.shield = 0;
+            });
+
             $gameArea = $('#game-area');
             left = $gameArea.offset().left;
             top = $gameArea.offset().top;
@@ -98,7 +103,7 @@
             -webkit-user-select: none;
             -moz-user-select: none;
 
-            background: #666;
+            background: #112;
             font-family: Arial, sans-serif;
         }
         
@@ -111,6 +116,7 @@
             width: 800px;
             height: 600px;
             background: black;
+            border: 1px solid #445;
         }
         
         #info {
@@ -124,7 +130,8 @@
             left: 820px;
             top: 250px;
             color: #fff;
-            background: #333;
+            border: 1px solid #445;
+            background: #001;
             width: 230px;
             height: 338px;
             padding: 10px;
@@ -141,6 +148,7 @@
         #game-area {
             position: relative;
             top: 8px;
+            left: 4px;
             
             width: 125px;
             height: 94px;
@@ -159,7 +167,7 @@
         .status {
             position: absolute;
             top: 620px;
-            background: #333;
+            background: #001;
             width: 234px;
             height: 59px;
             font-size: 14px;
@@ -167,6 +175,7 @@
             padding: 8px;
             line-height: 20px;
             font-weight: bold;
+            border: 1px solid #445;
         }
         
         .meter {
@@ -174,7 +183,7 @@
             margin-left: 10px;
             width: 100px;
             height: 10px;
-            border: 1px solid #fff;
+            border: 1px solid #999;
         }
         
         .meter-label {
@@ -184,7 +193,7 @@
         }
         
         #player-shield, #player-weapons, #ai-shield, #ai-weapons {
-            background: #666;
+            background: #333;
             width: 100px;
             height: 10px;
         }
@@ -245,7 +254,9 @@
             <input id="update-ships" type="checkbox" checked="checked"></input>
             <label for="update-ships">Update ships</label><br />
             <input id="auto-camera" type="checkbox" checked="checked"></input>
-            <label for="auto-camera">Auto camera</label>
+            <label for="auto-camera">Auto camera</label><br />
+            <input id="explode-player" type="button" value="Explode player"></input>
+            <input id="explode-ai" type="button" value="Explode AI"></input>
             <div id="game-area">
                 <div id="screen-area"></div>
             </div>

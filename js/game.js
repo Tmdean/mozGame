@@ -265,21 +265,25 @@ spcw.World.prototype.offsetY = function (y, dy) {
 
 spcw.Planet = function (world) {
     this.world = world;
+
     this.x = Math.round(spcw.WORLD_WIDTH / 2 - 64);
     this.y = Math.round(spcw.WORLD_HEIGHT / 2 - 64);
-    this.width = 128;
-    this.height = 128;
+
+    this.anim = new spcw.PlanetRenderer();
+
+    this.box = new spcw.Box();
+    this.width = this.box.width = this.anim.width;
+    this.height = this.box.height = this.anim.height;
 };
 
 spcw.Planet.prototype.draw = function (c, gs) {
-    if (spcw.assetsLoaded) {
-        c.save();
-        this.world.scale(c);
-        c.drawImage(spcw.imgAsset[19],
-            this.world.translateX(this.x, this.width),
-            this.world.translateY(this.y, this.height));
-        c.restore();
-    }
+    this.box.x = this.world.translateX(this.x, this.box.width);
+    this.box.y = this.world.translateY(this.y, this.box.height);
+
+    c.save();
+    this.world.scale(c);
+    this.anim.drawPlanet(c, this.box);
+    c.restore();
 };
 
 spcw.Bullet = function (world, x, y, dx, dy) {
@@ -288,8 +292,10 @@ spcw.Bullet = function (world, x, y, dx, dy) {
     this.y = y;
     this.dx = dx;
     this.dy = dy;
-    this.width = 8;
-    this.height = 8;
+    this.anim = new spcw.BulletRenderer();
+    this.box = new spcw.Box();
+    this.width = this.box.width = this.anim.width;
+    this.height = this.box.height = this.anim.height;
     this.life = spcw.BULLET_LIFE;
     this.collidePoly = [ [0, 0], [0, 0], [0, 0], [0, 0] ];
 };
@@ -303,48 +309,19 @@ spcw.Bullet.prototype.update = function (gs) {
 };
 
 spcw.Bullet.prototype.draw = function (c, gs) {
-    if (spcw.assetsLoaded) {
-        c.save();
-        this.world.scale(c);
-        c.drawImage(spcw.imgAsset[16],
-            this.world.translateX(this.x, this.width),
-            this.world.translateY(this.y, this.height));
-        c.restore();
-    }
+    c.save();
+    this.world.scale(c);
+    this.box.x = this.world.translateX(this.x, this.width);
+    this.box.y = this.world.translateY(this.y, this.height);
+    this.anim.drawBullet(c, this.box);
+    c.restore();
 };
 
 spcw.Bullet.prototype.collisionPoly = function () {
-    var centerX, centerY, angleA, angleB, h;
-
-    centerX = 2 * this.x + this.dx;
-    if (this.dx < 0) {
-        centerX -= this.width;
-    } else {
-        centerX += this.width;
-    }
-    centerX /= 2;
-
-    centerY = 2 * this.y + this.dy;
-    if (this.dy < 0) {
-        centerY -= this.width;
-    } else {
-        centerY += this.height;
-    }
-    centerY /= 2;
-
-    angleA = Math.atan2(-this.dy, this.dx);
-    angleB = Math.atan2(4, spcw.BULLET_SPEED / 2);
-    h = Math.sqrt(Math.pow(spcw.BULLET_SPEED / 2, 2) + 16);
-
-    this.collidePoly[0][0] = centerX + h * Math.cos(angleA + angleB);
-    this.collidePoly[0][1] = centerY + h * -Math.sin(angleA + angleB);
-    this.collidePoly[1][0] = centerX + h * Math.cos(angleA + Math.PI - angleB);
-    this.collidePoly[1][1] = centerY + h * -Math.sin(angleA + Math.PI - angleB);
-    this.collidePoly[2][0] = centerX + h * Math.cos(angleA + Math.PI + angleB);
-    this.collidePoly[2][1] = centerY + h * -Math.sin(angleA + Math.PI + angleB);
-    this.collidePoly[3][0] = centerX + h * Math.cos(angleA - angleB);
-    this.collidePoly[3][1] = centerY + h * -Math.sin(angleA - angleB);
-    return this.collidePoly;
+    this.box.x = this.x;
+    this.box.y = this.y;
+    
+    return this.anim.getCollisionPoly(this.box, this.dx, this.dy);
 };
 
 spcw.Bullet.prototype.collided = function (other) {
@@ -385,7 +362,7 @@ spcw.Ship = function (world, npc) {
     this.box = new spcw.Box();
     this.box.width = this.width;
     this.box.height = this.height;
-    this.anim = new spcw.ShipRenderer();
+    this.anim = new spcw.ShipRenderer(npc);
 
     world.addAnchor(this);
 
@@ -463,10 +440,11 @@ spcw.Ship.prototype.update = function (gs) {
 
     this.energy = Math.min(100, this.energy + spcw.RECHARGE_RATE);
 
-    if (this.shield < 0) {
+    if (this.shield <= 0 && !this.exploding) {
         this.shield = 0;
         this.exploding = true;
         this.explodeTimeout = 100;
+        this.anim.beginExplosion(cAngle);
     }
 
     if (this.exploding) {
@@ -509,18 +487,16 @@ spcw.Ship.prototype.draw = function (c, gs) {
     this.box.x = this.world.translateX(this.x, this.width);
     this.box.y = this.world.translateY(this.y, this.height);
 
-    if (spcw.assetsLoaded) {
-        c.save();
-        this.world.scale(c);
+    c.save();
+    this.world.scale(c);
 
-        if (this.exploding) {
-            this.anim.drawExplosion(c, this.box);
-        } else {
-            this.anim.drawShip(c, this.box, this.imgIndex, this.thrust,
-                this.deltaThet > 0, this.deltaThet < 0, this.npc);
-        }
-        c.restore();
+    if (this.exploding) {
+        this.anim.drawExplosion(c, this.box);
+    } else {
+        this.anim.drawShip(c, this.box, this.imgIndex, this.thrust,
+            this.deltaThet > 0, this.deltaThet < 0, this.npc);
     }
+    c.restore();
 };
 
 spcw.Ship.prototype.collisionPoly = function () {
