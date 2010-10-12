@@ -72,7 +72,7 @@ spcw.NUM_STARS = 300;
 spcw.MAX_STAR_SIZE = 3;
 spcw.STARFIELD_DEPTH = 3;
 spcw.LAYER_RANDOMNESS = 10;
-spcw.STAR_DETACHMENT = 4;
+spcw.STAR_DETACHMENT = 1;
 
 /* Data types */
 

@@ -303,11 +303,21 @@
         for (i = 0; i < this.stars.length; i++) {
             star = this.stars[i];
 
-			x = star.x - scrollX / (spcw.STAR_DETACHMENT * star.layer);
-			y = star.y - scrollY / (spcw.STAR_DETACHMENT * star.layer);
+			// Tim's star position logic.  Repeats properly.
+			x = star.x - scrollX;
+			y = star.y - scrollY;
 
-            while (x < -widthOffset) x += this.width;
-            while (y < -heightOffset) y += this.height;
+			// Jeremy's star position logic.  Has issues with repeating properly.
+			/*x = star.x - scrollX / (spcw.STAR_DETACHMENT * star.layer);
+			y = star.y - scrollY / (spcw.STAR_DETACHMENT * star.layer);/**/
+
+            while (x < -widthOffset){
+				x += this.width;
+			}
+			
+            while (y < -heightOffset){
+				y += this.height;
+			}
             
             initY = y;
             while (x < widthOffset + halfWidth) {
